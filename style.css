@@ -1,0 +1,39 @@
+    /* cores: 
+    #0e0e0e (preto), #8D6E63 (marrom), #C8E6C9 (verde claro), 
+    #4E342E (marrom escuro), #ff5400 (laranja), #f3f4f6 (cinza claro)
+    */
+    .tab-content {
+      transition: opacity 0.2s ease;
+    }
+    .tab-hidden {
+      display: none;
+    }
+    /* (cliente/admin) */
+    .role-option input[type="radio"] {
+      display: none;
+    }
+    .role-option input[type="radio"] + label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .role-option input[type="radio"]:checked + label {
+      background-color: #ff5400;
+      color: white;
+      border-color: #da7a57;
+    }
+    .role-option input[type="radio"]:not(:checked) + label {
+      background-color: #f3f4f6;
+      color: #ff5400;
+      border-color: #d1d5db;
+    }
+    .role-option input[type="radio"]:not(:checked) + label:hover {
+      background-color: #e5e7eb;
+    }
