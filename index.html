@@ -14,13 +14,11 @@
 
   <div class="bg-white/90 backdrop-blur-sm shadow-2xl rounded-3xl max-w-md w-full p-8 border border-white/30">
     
-    <!-- cabeçalho com ícone personalizado: lua + chapéu de cozinheiro -->
+    <!-- cabeçalho com ícone personalizado: lua -->
     <div class="text-center space-y-3">
-      <div class="relative inline-flex items-center justify-center w-24 h-24 rounded-full bg-[#A1887F]/20 text-[#5d3f31] shadow-md">
+      <div class="relative inline-flex items-center justify-center w-24 h-24 rounded-full bg-[#0e0e0e]/20 text-[#000000] shadow-md">
         <!-- lua grande -->
         <i class="fas fa-moon text-5xl"></i>
-        <!-- chapéu de chef pequeno sobreposto -->
-        <i class="fas fa-hat-chef absolute text-2xl bottom-7 right-5 rotate-12 drop-shadow"></i>
       </div>
       <h1 class="text-3xl font-bold tracking-tight">L.V.G.R</h1>
       <p class="text-[#5d3f31]/80 text-sm">Preparamos sua experiência · Escolha seu perfil</p>
@@ -78,7 +76,7 @@
     <!-- formulário de CADASTRO (cliente/admin) -->
     <div id="registerForm" class="tab-content tab-hidden mt-6 space-y-4">
       <form onsubmit="event.preventDefault(); fakeRegister();">
-        <!-- papel também no cadastro -->
+        <!--  -->
         <div class="role-option flex gap-3 justify-center mb-4">
           <div>
             <input type="radio" name="registerRole" id="registerCliente" value="cliente" checked>
@@ -86,7 +84,7 @@
           </div>
           <div>
             <input type="radio" name="registerRole" id="registerAdmin" value="admin">
-            <label for="registerAdmin"><i class="fas fa-crown"></i> Admin</label>
+            <label for="registerAdmin"><i class="fas fa-user-cog"></i> Admin</label>
           </div>
         </div>
 
@@ -111,7 +109,7 @@
                 class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#A1887F] focus:border-transparent outline-none transition">
         </div>
 
-        <!-- mensagem de erro senha (pequeno feedback) -->
+        <!-- mensagem de erro senha -->
         <div id="passwordError" class="text-red-500 text-xs hidden">As senhas não coincidem</div>
 
         <!-- termos -->
@@ -119,18 +117,12 @@
           <input type="checkbox" class="mt-1 rounded border-gray-300" required>
           <span>Aceito os <a href="#" class="text-[#8D6E63] underline">termos de uso</a> e políticas de privacidade.</span>
         </div>
-
-        <button type="submit" id="registerBtn" class="w-full bg-[#A1887F] hover:bg-[#8D6E63] text-white font-semibold py-3 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+        <!--Botão criar conta-->
+        <button type="submit" id="registerBtn" class="w-full bg-[#0e0e0e] hover:bg-[#ff5400] text-white font-semibold py-3 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
           <i class="fas fa-user-check"></i> Criar conta
         </button>
       </form>
     </div>
-
-    <!-- rodapé com mensagem ilustrativa (frontend apenas) -->
-    <div class="mt-6 text-xs text-center text-gray-500 border-t border-gray-200 pt-4">
-      <i class="fas fa-shield-alt mr-1"></i> ambiente de demonstração · sem banco de dados
-    </div>
-  </div>
 
   <!-- simulação de interação (frontend) -->
   <script>
@@ -181,21 +173,6 @@
 
     regPassword.addEventListener('input', checkPasswordMatch);
     regConfirm.addEventListener('input', checkPasswordMatch);
-
-    // funções simuladas de submit (apenas feedback visual)
-    function fakeLogin() {
-      const role = document.querySelector('input[name="loginRole"]:checked')?.value;
-      alert(`🔐 Simulação de login como ${role === 'admin' ? 'Administrador' : 'Cliente'}\n(apenas front-end, sem backend)`);
-    }
-
-    function fakeRegister() {
-      if (!checkPasswordMatch()) {
-        alert('❌ As senhas não coincidem. Corrija antes de cadastrar.');
-        return;
-      }
-      const role = document.querySelector('input[name="registerRole"]:checked')?.value;
-      alert(`📝 Simulação de cadastro como ${role === 'admin' ? 'Administrador' : 'Cliente'}.\nEm um sistema real, os dados seriam enviados.`);
-    }
 
     // garantir que o formulário de registro não submeta com senhas diferentes
     document.querySelector('#registerForm form').addEventListener('submit', (e) => {
