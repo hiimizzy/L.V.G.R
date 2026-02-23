@@ -21,9 +21,9 @@
 <section class="max-w-4xl mx-auto py-10 px-4">
   <h2 class="text-2xl text-center mb-6">Nosso Cardápio</h2>
   <div id="menu-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- Itens serão inseridos via JavaScript -->
   </div>
 </section>
+<!-- Fim da Seção do Carápio -->
 
 <!-- Seção do Carrinho -->
 <section class="max-w-4xl mx-auto px-4 pb-10">
@@ -43,6 +43,12 @@
   </table>
   <p id="total-carrinho" class="text-right mt-2 font-bold">Total: R$ 0,00</p>
   <div class="text-center mt-4">
+    <div class="mb-4">
+      <label for="mesa-select" class="block text-white mb-2">Selecione a Mesa:</label>
+      <select id="mesa-select" class="w-full p-2 rounded bg-white text-[#ff5400]">
+        <!-- Opções de mesa serão inseridas via JavaScript -->
+      </select>
+    </div>
     <button id="confirmar-pedido" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
       Confirmar Pedido
     </button>
@@ -53,6 +59,7 @@
 <script>
   // ----- Carrinho (armazenado em memória e sincronizado com localStorage) -----
   let carrinho = {};
+  let allProducts = [];
 
   // Carregar carrinho do localStorage, se existir
   if (localStorage.getItem('catcafe-carrinho')) {
@@ -75,10 +82,17 @@
 
     const itensCardapio = await getProducts(); // Busca os produtos da API
 
+    if (itensCardapio === null) {
+        container.innerHTML = '<p class="text-center col-span-full text-red-500 font-bold">Erro ao conectar com o servidor. Verifique se a API está rodando.</p>';
+        return;
+    }
+
+    allProducts = itensCardapio; // Salva os produtos globalmente
+
     container.innerHTML = ''; // Limpa o container antes de inserir os novos itens
 
     if (itensCardapio.length === 0) {
-      container.innerHTML = '<p class="text-center col-span-full">Não foi possível carregar o cardápio. Tente novamente mais tarde.</p>';
+      container.innerHTML = '<p class="text-center col-span-full">Nenhum item disponível no cardápio.</p>';
       return;
     }
 
@@ -92,6 +106,7 @@
         <p class="text-sm text-gray-600">${item.descricao || ''}</p>
         <p class="text-lg mt-2">${formatarPreco(item.price)}</p>
         <button class="adicionar-btn mt-2 bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700"
+                data-id="${item.id}"
                 data-nome="${item.nome}"
                 data-preco="${item.price}">
           Adicionar 🛒
@@ -104,46 +119,74 @@
     // Adiciona eventos aos botões "Adicionar"
     document.querySelectorAll('.adicionar-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
+        const id = e.target.dataset.id;
         const nome = e.target.dataset.nome;
         const preco = parseFloat(e.target.dataset.preco);
-        adicionarAoCarrinho(nome, preco);
+        adicionarAoCarrinho(id, nome, preco);
       });
     });
   }
 
+    // ----- Renderizar mesas -----
+    async function renderizarMesas() {
+        const select = document.getElementById('mesa-select');
+        select.innerHTML = '<option>Carregando mesas...</option>';
+
+        const mesas = await getMesas();
+
+        select.innerHTML = '';
+
+        if (mesas === null) {
+            select.innerHTML = '<option>Erro de conexão</option>';
+            return;
+        }
+
+        if (mesas.length === 0) {
+            select.innerHTML = '<option>Nenhuma mesa disponível</option>';
+            return;
+        }
+
+        mesas.forEach(mesa => {
+            const option = document.createElement('option');
+            option.value = mesa.id;
+            option.textContent = mesa.numero;
+            select.appendChild(option);
+        });
+    }
+
   // ----- Funções de manipulação do carrinho -----
-  function adicionarAoCarrinho(nome, preco) {
-    if (carrinho[nome]) {
-      carrinho[nome].quantidade++;
+  function adicionarAoCarrinho(id, nome, preco) {
+    if (carrinho[id]) {
+      carrinho[id].quantidade++;
     } else {
-      carrinho[nome] = { quantidade: 1, preco: preco };
+      carrinho[id] = { id: id, nome: nome, quantidade: 1, preco: preco };
     }
     salvarCarrinho();
     renderizarCarrinho();
   }
 
-  function incrementarItem(nome) {
-    if (carrinho[nome]) {
-      carrinho[nome].quantidade++;
+  function incrementarItem(id) {
+    if (carrinho[id]) {
+      carrinho[id].quantidade++;
       salvarCarrinho();
       renderizarCarrinho();
     }
   }
 
-  function decrementarItem(nome) {
-    if (carrinho[nome]) {
-      carrinho[nome].quantidade--;
-      if (carrinho[nome].quantidade <= 0) {
-        delete carrinho[nome];
+  function decrementarItem(id) {
+    if (carrinho[id]) {
+      carrinho[id].quantidade--;
+      if (carrinho[id].quantidade <= 0) {
+        delete carrinho[id];
       }
       salvarCarrinho();
       renderizarCarrinho();
     }
   }
 
-  function removerItem(nome) {
-    if (carrinho[nome]) {
-      delete carrinho[nome];
+  function removerItem(id) {
+    if (carrinho[id]) {
+      delete carrinho[id];
       salvarCarrinho();
       renderizarCarrinho();
     }
@@ -155,8 +198,8 @@
     tbody.innerHTML = '';
     let total = 0;
 
-    for (let nome in carrinho) {
-      const item = carrinho[nome];
+    for (let id in carrinho) {
+      const item = carrinho[id];
       const subtotal = item.quantidade * item.preco;
       total += subtotal;
 
@@ -164,13 +207,13 @@
       tr.className = 'border-t';
 
       tr.innerHTML = `
-        <td class="py-2">${nome}</td>
+        <td class="py-2">${item.nome}</td>
         <td>${item.quantidade}</td>
         <td>${formatarPreco(subtotal)}</td>
         <td class="space-x-2">
-          <button class="incrementar-btn text-blue-600 hover:text-blue-800" data-nome="${nome}">+</button>
-          <button class="decrementar-btn text-yellow-600 hover:text-yellow-800" data-nome="${nome}">-</button>
-          <button class="remover-btn text-red-600 hover:text-red-800" data-nome="${nome}">
+          <button class="incrementar-btn text-blue-600 hover:text-blue-800" data-id="${id}">+</button>
+          <button class="decrementar-btn text-yellow-600 hover:text-yellow-800" data-id="${id}">-</button>
+          <button class="remover-btn text-red-600 hover:text-red-800" data-id="${id}">
             <i class="fas fa-trash-alt"></i> <!-- Ícone lixeira -->
           </button>
         </td>
@@ -192,54 +235,72 @@
     // Adiciona eventos aos botões do carrinho
     document.querySelectorAll('.incrementar-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const nome = e.target.dataset.nome;
-        incrementarItem(nome);
+        const id = e.target.dataset.id;
+        incrementarItem(id);
       });
     });
 
     document.querySelectorAll('.decrementar-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const nome = e.target.dataset.nome;
-        decrementarItem(nome);
+        const id = e.target.dataset.id;
+        decrementarItem(id);
       });
     });
 
     document.querySelectorAll('.remover-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        // 
-        const nome = e.target.closest('button').dataset.nome;
-        removerItem(nome);
+        const id = e.target.closest('button').dataset.id;
+        removerItem(id);
       });
     });
   }
 
   // ----- Finalizar pedido -----
-  document.getElementById('confirmar-pedido').addEventListener('click', () => {
+  document.getElementById('confirmar-pedido').addEventListener('click', async () => {
     if (Object.keys(carrinho).length === 0) {
       alert('Seu carrinho está vazio!');
       return;
     }
 
-    let resumo = 'Pedido confirmado:\n';
-    let total = 0;
-    for (let nome in carrinho) {
-      const item = carrinho[nome];
-      const subtotal = item.quantidade * item.preco;
-      resumo += `${nome} - ${item.quantidade}x = ${formatarPreco(subtotal)}\n`;
-      total += subtotal;
+    const mesaId = document.getElementById('mesa-select').value;
+    if (!mesaId) {
+        alert('Por favor, selecione uma mesa.');
+        return;
     }
-    resumo += `\nTotal: ${formatarPreco(total)}`;
-    alert(resumo);
 
-    // Opcional: limpar carrinho após confirmar
-    // carrinho = {};
-    // salvarCarrinho();
-    // renderizarCarrinho();
+    const items = Object.values(carrinho).map(item => {
+        const product = allProducts.find(p => p.id == item.id);
+        return {
+            quantidade: item.quantidade,
+            price: item.preco,
+            produto: product
+        };
+    });
+
+    const total = items.reduce((sum, item) => sum + (item.quantidade * item.price), 0);
+
+    const pedido = {
+        mesa: { id: mesaId },
+        items: items,
+        total: total,
+        status: 'SUBMETIDO'
+    };
+
+    try {
+        const newOrder = await postPedido(pedido);
+        alert(`Pedido #${newOrder.id} realizado com sucesso!`);
+        carrinho = {};
+        salvarCarrinho();
+        renderizarCarrinho();
+    } catch (error) {
+        alert('Falha ao realizar o pedido. Tente novamente.');
+    }
   });
 
   // ----- Inicialização -----
   renderizarCardapio();
   renderizarCarrinho();
+  renderizarMesas();
 </script>
 
 </body>
