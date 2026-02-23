@@ -3,82 +3,243 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cardápio</title>
+  <title>Cardápio - L.V.G.R</title>
+  <link rel="shortcut icon" href="lua.ico" type="image/x-icon">
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome para o ícone da lixeira -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body class="bg-[#C8E6C9] text-[#4E342E]">
-<header class="bg-[#D7CCC8] text-center py-6">
-  <img src="src/pancake.jpg" alt="foto" class="w-32 h-32 mx-auto rounded-full shadow-lg" />
-  <h1 class="text-4xl font-semibold">CatCafe</h1>
-  <p>Olá, <?php echo $_SESSION['cliente'] ?? 'Visitante'; ?>! Faça seu pedido 💚</p>
-  <form action="cardapio.php" method="GET" class="mt-2">
-    <input type="hidden" name="trocar" value="1">
-    <button type="submit" class="text-sm bg-red-400 text-white px-4 py-1 rounded hover:bg-red-500">Trocar nome</button>
-  </form>
+<body class="bg-[#0e0e0e] text-[#ffffff]">
+
+<header class="bg-[#ff5400] text-center py-6">
+  <img src="img/hamb-1.png" alt="foto" class="w-32 h-32 mx-auto rounded-full shadow-lg border-4 border-white" />
+  <h1 class="text-4xl font-semibold">L.V.G.R</h1>
+  <p class="text-sm mt-4">Faça seu pedido com carinho 💚</p>
 </header>
 
-  <section class="max-w-4xl mx-auto py-10">
-    <h2 class="text-2xl text-center mb-6">Nosso Cardápio</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <?php
-      $itens = [
-        ['nome' => 'Iced Coffee', 'preco' => 8.00, 'img' => 'icedcoffe.jpg'],
-        ['nome' => 'Capuccino', 'preco' => 8.00, 'img' => 'cafe.jpg'],
-        ['nome' => 'Café Latte', 'preco' => 8.00, 'img' => 'cafelatte.jpg'],
-        ['nome' => 'Panqueca', 'preco' => 16.00, 'img' => 'panqueca.jpg'],
-        ['nome' => 'Cookie', 'preco' => 6.00, 'img' => 'cookie.jpg'],
-        ['nome' => 'Brownie', 'preco' => 10.00, 'img' => 'brownie.jpg']
-      ];
-      foreach ($itens as $item): ?>
-        <div class="bg-white p-4 rounded-xl shadow">
-          <img src="src/<?php echo $item['img']; ?>" class="w-full h-40 object-cover rounded-md mb-4" />
-          <h3 class="text-xl font-bold"><?php echo $item['nome']; ?></h3>
-          <p class="text-lg">R$ <?php echo number_format($item['preco'], 2, ',', '.'); ?></p>
-          <form action="cardapio.php" method="POST">
-            <input type="hidden" name="item" value="<?php echo $item['nome']; ?>">
-            <input type="hidden" name="preco" value="<?php echo $item['preco']; ?>">
-            <button type="submit" class="mt-2 bg-green-600 text-white px-4 py-1 rounded">Adicionar 🛒</button>
-          </form>
-        </div>
-      <?php endforeach; ?>
-    </div>
-  </section>
+<!-- Seção do Cardápio -->
+<section class="max-w-4xl mx-auto py-10 px-4">
+  <h2 class="text-2xl text-center mb-6">Nosso Cardápio</h2>
+  <div id="menu-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Itens serão inseridos via JavaScript -->
+  </div>
+</section>
 
-  <section class="max-w-4xl mx-auto px-4">
-    <h2 class="text-2xl font-semibold text-center mb-4">Carrinho</h2>
-    <table class="w-full bg-white rounded shadow text-center">
-      <thead class="bg-[#A1887F] text-white">
-        <tr>
-          <th class="py-2">Item</th>
-          <th>Quantidade</th>
-          <th>Preço</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php
-        $total = 0;
-        if (isset($_SESSION['carrinho'])):
-          foreach ($_SESSION['carrinho'] as $nome => $dados):
-            $subtotal = $dados['quantidade'] * $dados['preco'];
-            $total += $subtotal;
-        ?>
-        <tr class="border-t">
-          <td class="py-2"><?php echo $nome; ?></td>
-          <td><?php echo $dados['quantidade']; ?></td>
-          <td>R$ <?php echo number_format($subtotal, 2, ',', '.'); ?></td>
-          <td>
-            <a href="cardapio.php?acao=mais&item=<?php echo urlencode($nome); ?>" class="px-2">+</a>
-            <a href="cardapio.php?acao=menos&item=<?php echo urlencode($nome); ?>" class="px-2">-</a>
-          </td>
-        </tr>
-        <?php endforeach; endif; ?>
-      </tbody>
-    </table>
-    <p class="text-right mt-2 font-bold">Total: R$ <?php echo number_format($total, 2, ',', '.'); ?></p>
-    <div class="text-center mt-4">
-      <a href="finalizar.php" class="bg-green-600 text-white px-6 py-2 rounded">Confirmar Pedido</a>
-    </div>
-  </section>
+<!-- Seção do Carrinho -->
+<section class="max-w-4xl mx-auto px-4 pb-10">
+  <h2 class="text-2xl font-semibold text-center mb-4">Carrinho</h2>
+  <table class="w-full bg-white rounded shadow text-center text-[#ff5400]">
+    <thead class="bg-[#ff5400] text-white">
+      <tr>
+        <th class="py-2">Item</th>
+        <th>Quantidade</th>
+        <th>Preço</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="carrinho-corpo">
+      <!-- Itens do carrinho serão inseridos aqui -->
+    </tbody>
+  </table>
+  <p id="total-carrinho" class="text-right mt-2 font-bold">Total: R$ 0,00</p>
+  <div class="text-center mt-4">
+    <button id="confirmar-pedido" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+      Confirmar Pedido
+    </button>
+  </div>
+</section>
+
+<script>
+  // ----- Itens do cardápio -----
+  const itensCardapio = [
+    { nome: 'Hambúrguer', preco: 10.00, img: 'img/hamb-1.png' },
+    { nome: 'Hambúrguer com Francis Bacon', preco: 13.00, img: 'img/hamb-2.png' },
+    { nome: 'Hambúrguer com Queijo', preco: 18.00, img: 'img/hamb-3.png' },
+    { nome: 'Hambúrguer de Siri', preco: 16.00, img: 'img/hamb-4.png' },
+    { nome: 'Coca-Cola', preco: 8.00, img: 'img/refri-1.png' },
+    { nome: 'Guaraná', preco: 8.00, img: 'img/refri-2.png' }
+  ];
+
+  // ----- Carrinho (armazenado em memória e sincronizado com localStorage) -----
+  let carrinho = {};
+
+  // Carregar carrinho do localStorage, se existir
+  if (localStorage.getItem('catcafe-carrinho')) {
+    carrinho = JSON.parse(localStorage.getItem('catcafe-carrinho'));
+  }
+
+  // ----- Funções auxiliares -----
+  function salvarCarrinho() {
+    localStorage.setItem('catcafe-carrinho', JSON.stringify(carrinho));
+  }
+
+  function formatarPreco(valor) {
+    return 'R$ ' + valor.toFixed(2).replace('.', ',');
+  }
+
+  // ----- Renderizar cardápio (cria os cards dinamicamente) -----
+  function renderizarCardapio() {
+    const container = document.getElementById('menu-container');
+    container.innerHTML = ''; // limpa antes de inserir
+
+    itensCardapio.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'bg-[#ffffff] text-[#ff5400] p-4 rounded-xl shadow';
+
+      card.innerHTML = `
+        <img src="${item.img}" alt="${item.nome}" class="w-full h-40 object-cover rounded-md mb-4" />
+        <h3 class="text-xl font-bold">${item.nome}</h3>
+        <p class="text-lg">${formatarPreco(item.preco)}</p>
+        <button class="adicionar-btn mt-2 bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700"
+                data-nome="${item.nome}"
+                data-preco="${item.preco}">
+          Adicionar 🛒
+        </button>
+      `;
+
+      container.appendChild(card);
+    });
+
+    // Adiciona eventos aos botões "Adicionar"
+    document.querySelectorAll('.adicionar-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const nome = e.target.dataset.nome;
+        const preco = parseFloat(e.target.dataset.preco);
+        adicionarAoCarrinho(nome, preco);
+      });
+    });
+  }
+
+  // ----- Funções de manipulação do carrinho -----
+  function adicionarAoCarrinho(nome, preco) {
+    if (carrinho[nome]) {
+      carrinho[nome].quantidade++;
+    } else {
+      carrinho[nome] = { quantidade: 1, preco: preco };
+    }
+    salvarCarrinho();
+    renderizarCarrinho();
+  }
+
+  function incrementarItem(nome) {
+    if (carrinho[nome]) {
+      carrinho[nome].quantidade++;
+      salvarCarrinho();
+      renderizarCarrinho();
+    }
+  }
+
+  function decrementarItem(nome) {
+    if (carrinho[nome]) {
+      carrinho[nome].quantidade--;
+      if (carrinho[nome].quantidade <= 0) {
+        delete carrinho[nome];
+      }
+      salvarCarrinho();
+      renderizarCarrinho();
+    }
+  }
+
+  function removerItem(nome) {
+    if (carrinho[nome]) {
+      delete carrinho[nome];
+      salvarCarrinho();
+      renderizarCarrinho();
+    }
+  }
+
+  // ----- Renderizar a tabela do carrinho -----
+  function renderizarCarrinho() {
+    const tbody = document.getElementById('carrinho-corpo');
+    tbody.innerHTML = '';
+    let total = 0;
+
+    for (let nome in carrinho) {
+      const item = carrinho[nome];
+      const subtotal = item.quantidade * item.preco;
+      total += subtotal;
+
+      const tr = document.createElement('tr');
+      tr.className = 'border-t';
+
+      tr.innerHTML = `
+        <td class="py-2">${nome}</td>
+        <td>${item.quantidade}</td>
+        <td>${formatarPreco(subtotal)}</td>
+        <td class="space-x-2">
+          <button class="incrementar-btn text-blue-600 hover:text-blue-800" data-nome="${nome}">+</button>
+          <button class="decrementar-btn text-yellow-600 hover:text-yellow-800" data-nome="${nome}">-</button>
+          <button class="remover-btn text-red-600 hover:text-red-800" data-nome="${nome}">
+            <i class="fas fa-trash-alt"></i> <!-- Ícone lixeira -->
+          </button>
+        </td>
+      `;
+
+      tbody.appendChild(tr);
+    }
+
+    // Se o carrinho estiver vazio
+    if (Object.keys(carrinho).length === 0) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td colspan="4" class="py-4 text-gray-500">Carrinho vazio</td>';
+      tbody.appendChild(tr);
+    }
+
+    // Atualiza o total
+    document.getElementById('total-carrinho').innerText = `Total: ${formatarPreco(total)}`;
+
+    // Adiciona eventos aos botões do carrinho
+    document.querySelectorAll('.incrementar-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const nome = e.target.dataset.nome;
+        incrementarItem(nome);
+      });
+    });
+
+    document.querySelectorAll('.decrementar-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const nome = e.target.dataset.nome;
+        decrementarItem(nome);
+      });
+    });
+
+    document.querySelectorAll('.remover-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        // 
+        const nome = e.target.closest('button').dataset.nome;
+        removerItem(nome);
+      });
+    });
+  }
+
+  // ----- Finalizar pedido -----
+  document.getElementById('confirmar-pedido').addEventListener('click', () => {
+    if (Object.keys(carrinho).length === 0) {
+      alert('Seu carrinho está vazio!');
+      return;
+    }
+
+    let resumo = 'Pedido confirmado:\n';
+    let total = 0;
+    for (let nome in carrinho) {
+      const item = carrinho[nome];
+      const subtotal = item.quantidade * item.preco;
+      resumo += `${nome} - ${item.quantidade}x = ${formatarPreco(subtotal)}\n`;
+      total += subtotal;
+    }
+    resumo += `\nTotal: ${formatarPreco(total)}`;
+    alert(resumo);
+
+    // Opcional: limpar carrinho após confirmar
+    // carrinho = {};
+    // salvarCarrinho();
+    // renderizarCarrinho();
+  });
+
+  // ----- Inicialização -----
+  renderizarCardapio();
+  renderizarCarrinho();
+</script>
+
 </body>
 </html>
