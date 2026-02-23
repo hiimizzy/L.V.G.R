@@ -49,17 +49,8 @@
   </div>
 </section>
 
+<script src="api.js"></script>
 <script>
-  // ----- Itens do cardápio -----
-  const itensCardapio = [
-    { nome: 'Hambúrguer', preco: 10.00, img: 'img/hamb-1.png' },
-    { nome: 'Hambúrguer com Francis Bacon', preco: 13.00, img: 'img/hamb-2.png' },
-    { nome: 'Hambúrguer com Queijo', preco: 18.00, img: 'img/hamb-3.png' },
-    { nome: 'Hambúrguer de Siri', preco: 16.00, img: 'img/hamb-4.png' },
-    { nome: 'Coca-Cola', preco: 8.00, img: 'img/refri-1.png' },
-    { nome: 'Guaraná', preco: 8.00, img: 'img/refri-2.png' }
-  ];
-
   // ----- Carrinho (armazenado em memória e sincronizado com localStorage) -----
   let carrinho = {};
 
@@ -77,22 +68,32 @@
     return 'R$ ' + valor.toFixed(2).replace('.', ',');
   }
 
-  // ----- Renderizar cardápio (cria os cards dinamicamente) -----
-  function renderizarCardapio() {
+  // ----- Renderizar cardápio (cria os cards dinamicamente a partir da API) -----
+  async function renderizarCardapio() {
     const container = document.getElementById('menu-container');
-    container.innerHTML = ''; // limpa antes de inserir
+    container.innerHTML = 'Carregando cardápio...'; // Feedback para o usuário
+
+    const itensCardapio = await getProducts(); // Busca os produtos da API
+
+    container.innerHTML = ''; // Limpa o container antes de inserir os novos itens
+
+    if (itensCardapio.length === 0) {
+      container.innerHTML = '<p class="text-center col-span-full">Não foi possível carregar o cardápio. Tente novamente mais tarde.</p>';
+      return;
+    }
 
     itensCardapio.forEach(item => {
       const card = document.createElement('div');
       card.className = 'bg-[#ffffff] text-[#ff5400] p-4 rounded-xl shadow';
 
       card.innerHTML = `
-        <img src="${item.img}" alt="${item.nome}" class="w-full h-40 object-cover rounded-md mb-4" />
+        <img src="${item.imgUrl}" alt="${item.nome}" class="w-full h-40 object-cover rounded-md mb-4" />
         <h3 class="text-xl font-bold">${item.nome}</h3>
-        <p class="text-lg">${formatarPreco(item.preco)}</p>
+        <p class="text-sm text-gray-600">${item.descricao || ''}</p>
+        <p class="text-lg mt-2">${formatarPreco(item.price)}</p>
         <button class="adicionar-btn mt-2 bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700"
                 data-nome="${item.nome}"
-                data-preco="${item.preco}">
+                data-preco="${item.price}">
           Adicionar 🛒
         </button>
       `;
