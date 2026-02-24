@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Teste API Produtos</title>
+</head>
+
+<body>
+
+<h1>Lista de Produtos</h1>
+<button onclick="buscarProdutos()">Carregar Produtos</button>
+
+<div id="lista"></div>
+
+<script>
+
+const API_URL = "http://localhost:8080"; // troque quando publicar
+
+async function buscarProdutos() {
+
+  const lista = document.getElementById("lista");
+  lista.innerHTML = "Carregando...";
+
+  try {
+
+    const resposta = await fetch(API_URL + "/produtos");
+
+    if (!resposta.ok) {
+      throw new Error("Erro HTTP: " + resposta.status);
+    }
+
+    const produtos = await resposta.json();
+
+    lista.innerHTML = "";
+
+    produtos.forEach(produto => {
+
+      const div = document.createElement("div");
+
+      div.style.border = "1px solid #000";
+      div.style.margin = "10px";
+      div.style.padding = "10px";
+
+      div.innerHTML = `
+        <h3>${produto.nome}</h3>
+        <p>Preço: R$ ${produto.price}</p>
+        <p>ID: ${produto.id}</p>
+      `;
+
+      lista.appendChild(div);
+    });
+
+  } catch (erro) {
+
+    lista.innerHTML = "Erro ao conectar com a API.";
+    console.error(erro);
+
+  }
+
+}
+
+</script>
+
+</body>
+</html>
