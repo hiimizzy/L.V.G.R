@@ -3,15 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel Administrativo · L.V.G.R</title>
-  <link rel="shortcut icon" href="lua.ico" type="image/x-icon">
+  <title>Admin · L.V.G.R</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: { display: ['Playfair Display', 'serif'], body: ['Lato', 'sans-serif'] },
           colors: {
             warm: { chocolate: '#4a2010', orange: '#c85a17', cream: '#f5f0e8' },
             brand: { bg: '#f5f0e8', card: '#fdfbf7', border: '#e0d5c5', primary: '#a33a10' }
@@ -20,275 +17,142 @@
       }
     }
   </script>
-  <style>
-    body { font-family: 'Lato', sans-serif; background-color: #f5f0e8; }
-    h1, h2, h3 { font-family: 'Playfair Display', serif; }
-    .tab-active { border-bottom: 3px solid #c85a17; color: #4a2010; font-weight: bold; }
-    .tab-content { animation: fadeIn 0.3s ease-in-out; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  </style>
 </head>
-<body class="text-warm-chocolate min-h-screen">
+<body class="bg-brand-bg text-warm-chocolate p-6">
 
-  <div class="max-w-6xl mx-auto p-4 md:p-6">
-    <header class="bg-warm-chocolate rounded-t-xl shadow-lg p-6 flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-12 h-12 bg-warm-orange rounded-lg flex items-center justify-center shadow-inner">
-            <span class="font-display text-xl font-bold text-warm-cream">L</span>
-        </div>
-        <div>
-            <h1 class="text-2xl font-bold text-warm-cream">Gestão L.V.G.R</h1>
-            <p class="text-warm-cream/70 text-[10px] uppercase tracking-[0.2em]">Administração Artesanal</p>
-        </div>
+  <div class="max-w-5xl mx-auto">
+    <header class="flex justify-between items-center mb-8 bg-warm-chocolate p-6 rounded-xl shadow-lg">
+      <h1 class="text-2xl font-bold text-warm-cream">Administração L.V.G.R</h1>
+      <div class="flex gap-4">
+        <button onclick="abrirModal('produto')" class="bg-warm-orange text-white px-4 py-2 rounded-lg font-bold text-sm">+ Produto</button>
+        <button onclick="abrirModal('categoria')" class="bg-brand-primary text-white px-4 py-2 rounded-lg font-bold text-sm">+ Categoria</button>
       </div>
-      <button onclick="loadAll()" class="bg-warm-orange hover:bg-brand-primary text-warm-cream px-5 py-2 rounded-lg text-xs font-bold transition-all transform active:scale-95 shadow-md">
-        ATUALIZAR DADOS
-      </button>
     </header>
 
-    <nav class="bg-brand-card border-x border-brand-border flex overflow-x-auto shadow-sm">
-      <button onclick="switchTab('categorias')" id="tab-categorias" class="tab-btn flex-1 py-4 text-xs uppercase tracking-widest tab-active transition-all">Categorias</button>
-      <button onclick="switchTab('produtos')" id="tab-produtos" class="tab-btn flex-1 py-4 text-xs uppercase tracking-widest transition-all">Produtos</button>
-      <button onclick="switchTab('mesas')" id="tab-mesas" class="tab-btn flex-1 py-4 text-xs uppercase tracking-widest transition-all">Mesas</button>
-    </nav>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="bg-brand-card p-6 rounded-xl border border-brand-border shadow-sm">
+        <h2 class="font-bold mb-4 border-b border-brand-border pb-2">Produtos</h2>
+        <div id="lista-produtos" class="space-y-3"></div>
+      </div>
 
-    <main class="bg-brand-card rounded-b-xl border border-brand-border p-6 shadow-inner min-h-[500px]">
-      
-      <section id="sec-categorias" class="tab-content">
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="text-2xl font-bold">Categorias no Cardápio</h2>
-            <button onclick="openModal('categoria')" class="bg-warm-chocolate text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-warm-orange transition-colors">+ ADICIONAR</button>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="border-b border-brand-border text-[10px] uppercase tracking-wider text-brand-muted">
-                        <th class="py-3 px-2">Ordem</th>
-                        <th class="py-3 px-2">Nome da Categoria</th>
-                        <th class="py-3 px-2 text-right">Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="list-categorias" class="divide-y divide-brand-border/40"></tbody>
-            </table>
-        </div>
-      </section>
-
-      <section id="sec-produtos" class="tab-content hidden">
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="text-2xl font-bold">Produtos e Itens</h2>
-            <button onclick="openModal('produto')" class="bg-warm-chocolate text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-warm-orange transition-colors">+ NOVO PRODUTO</button>
-        </div>
-        <div id="list-produtos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-      </section>
-
-      <section id="sec-mesas" class="tab-content hidden">
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="text-2xl font-bold">Mesas e QR Codes</h2>
-            <button onclick="openModal('mesa')" class="bg-warm-chocolate text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-warm-orange transition-colors">+ ADICIONAR MESA</button>
-        </div>
-        <div id="list-mesas" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4"></div>
-      </section>
-
-    </main>
-  </div>
-
-  <div id="modal" class="fixed inset-0 bg-warm-chocolate/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-brand-card rounded-2xl w-full max-w-md p-8 shadow-2xl border border-brand-border transform transition-all scale-100">
-        <h3 id="modal-title" class="text-2xl font-bold mb-6 text-warm-chocolate">Título</h3>
-        <form id="modal-form" class="space-y-5">
-            <div id="form-fields" class="space-y-4"></div>
-            <div class="flex justify-end gap-3 pt-6">
-                <button type="button" onclick="closeModal()" class="px-4 py-2 text-xs font-bold text-brand-muted uppercase tracking-widest hover:text-warm-chocolate">Cancelar</button>
-                <button type="submit" class="bg-warm-orange text-white px-8 py-2 rounded-lg text-xs font-bold shadow-lg hover:bg-brand-primary transition-all">GRAVAR DADOS</button>
-            </div>
-        </form>
+      <div class="bg-brand-card p-6 rounded-xl border border-brand-border shadow-sm">
+        <h2 class="font-bold mb-4 border-b border-brand-border pb-2">Categorias (Ordem)</h2>
+        <div id="lista-categorias" class="space-y-3"></div>
+      </div>
     </div>
   </div>
 
+  <div id="modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl">
+      <h3 id="modal-titulo" class="text-xl font-bold mb-6"></h3>
+      <form id="form-admin" class="space-y-4">
+        <div id="campos-dinamicos"></div>
+        <div class="flex justify-end gap-3 mt-6">
+          <button type="button" onclick="fecharModal()" class="text-sm font-bold">Cancelar</button>
+          <button type="submit" class="bg-warm-chocolate text-white px-6 py-2 rounded-lg font-bold">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="api.js"></script>
   <script>
-    const API_BASE = 'http://localhost:8080';
-    let currentData = { categorias: [], produtos: [], mesas: [] };
-    let modalAction = { type: '', id: null };
+    let dadosGlobal = { categorias: [], produtos: [] };
 
-    async function init() {
-        await loadAll();
+    async function carregarDados() {
+      // Usando as funções do seu api.js
+      dadosGlobal.produtos = await getProducts();
+      // Se não tiver getCategorias no api.js, usamos o fetch padrão
+      const resCat = await fetch('http://localhost:8080/categorias');
+      dadosGlobal.categorias = await resCat.json();
+      
+      renderizarListas();
     }
 
-    async function loadAll() {
-        try {
-            const [cats, prods, mesas] = await Promise.all([
-                fetch(`${API_BASE}/categorias`).then(r => r.json()),
-                fetch(`${API_BASE}/produtos`).then(r => r.json()),
-                fetch(`${API_BASE}/mesas`).then(r => r.json())
-            ]);
-            currentData = { categorias: cats, produtos: prods, mesas: mesas };
-            renderAll();
-        } catch (e) { console.error("Erro na API", e); }
+    function renderizarListas() {
+      const pContainer = document.getElementById('lista-produtos');
+      const cContainer = document.getElementById('lista-categorias');
+
+      pContainer.innerHTML = dadosGlobal.produtos.map(p => `
+        <div class="flex justify-between items-center text-sm bg-white p-2 rounded border border-brand-border">
+          <span>${p.nome}</span>
+          <button onclick="excluirItem('produtos', ${p.id})" class="text-red-500 font-bold">Remover</button>
+        </div>
+      `).join('');
+
+      cContainer.innerHTML = dadosGlobal.categorias.sort((a,b) => a.ordem - b.ordem).map(c => `
+        <div class="flex justify-between items-center text-sm bg-white p-2 rounded border border-brand-border">
+          <span><span class="font-bold text-warm-orange">#${c.ordem}</span> ${c.nome}</span>
+          <button onclick="excluirItem('categorias', ${c.id})" class="text-red-500 font-bold">Remover</button>
+        </div>
+      `).join('');
     }
 
-    function switchTab(tab) {
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
-        document.getElementById(`sec-${tab}`).classList.remove('hidden');
-        document.getElementById(`tab-${tab}`).classList.add('tab-active');
+    function abrirModal(tipo) {
+      const campos = document.getElementById('campos-dinamicos');
+      document.getElementById('modal-titulo').innerText = "Novo " + tipo;
+      document.getElementById('modal').dataset.tipo = tipo;
+
+      if(tipo === 'produto') {
+        campos.innerHTML = `
+          <input type="text" id="nome" placeholder="Nome" class="w-full p-2 border rounded" required>
+          <input type="number" step="0.01" id="preco" placeholder="Preço" class="w-full p-2 border rounded" required>
+          <select id="cat" class="w-full p-2 border rounded">
+            ${dadosGlobal.categorias.map(c => `<option value="${c.id}">${c.nome}</option>`).join('')}
+          </select>
+          <input type="file" id="arquivo" class="w-full text-xs">
+        `;
+      } else {
+        campos.innerHTML = `
+          <input type="text" id="nome" placeholder="Nome da Categoria" class="w-full p-2 border rounded" required>
+          <input type="number" id="ordem" placeholder="Ordem de exibição" class="w-full p-2 border rounded" required>
+        `;
+      }
+      document.getElementById('modal').classList.replace('hidden', 'flex');
     }
 
-    function renderAll() {
-        // Render Categorias
-        document.getElementById('list-categorias').innerHTML = currentData.categorias.sort((a,b) => a.ordem - b.ordem).map(c => `
-            <tr class="hover:bg-brand-bg/30 transition-colors">
-                <td class="py-4 px-2 font-bold text-warm-orange">${c.ordem}</td>
-                <td class="py-4 px-2 font-medium">${c.nome}</td>
-                <td class="py-4 px-2 text-right">
-                    <button onclick='editCategoria(${JSON.stringify(c)})' class="text-[10px] font-bold text-warm-chocolate bg-brand-border/40 px-3 py-1 rounded hover:bg-brand-border transition-all mr-2">EDITAR</button>
-                    <button onclick="deleteItem('categorias', ${c.id})" class="text-[10px] font-bold text-brand-primary px-3 py-1 rounded hover:bg-red-50 transition-all">EXCLUIR</button>
-                </td>
-            </tr>
-        `).join('');
+    function fecharModal() { document.getElementById('modal').classList.replace('flex', 'hidden'); }
 
-        // Render Produtos
-        document.getElementById('list-produtos').innerHTML = currentData.produtos.map(p => `
-            <div class="bg-white p-4 rounded-xl border border-brand-border shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
-                <div class="flex gap-4">
-                    <img src="${p.imgUrl || 'img/placeholder.png'}" class="w-20 h-20 rounded-lg object-cover bg-brand-bg border border-brand-border/50">
-                    <div class="flex-1">
-                        <h4 class="font-bold text-base leading-tight">${p.nome}</h4>
-                        <p class="text-[9px] text-brand-muted uppercase font-bold tracking-tighter mt-1">${p.categoria?.nome || 'Geral'}</p>
-                        <p class="text-brand-primary font-bold mt-2">${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.price)}</p>
-                    </div>
-                </div>
-                <div class="flex justify-end gap-2 mt-4 pt-4 border-t border-brand-bg">
-                    <button onclick='editProduto(${JSON.stringify(p)})' class="text-[10px] font-bold text-warm-chocolate uppercase tracking-widest">Editar</button>
-                    <span class="text-brand-border">|</span>
-                    <button onclick="deleteItem('produtos', ${p.id})" class="text-[10px] font-bold text-brand-primary uppercase tracking-widest">Remover</button>
-                </div>
-            </div>
-        `).join('');
+    document.getElementById('form-admin').onsubmit = async (e) => {
+      e.preventDefault();
+      const tipo = document.getElementById('modal').dataset.tipo;
+      
+      if(tipo === 'produto') {
+        const formData = new FormData();
+        const produtoObj = {
+          nome: document.getElementById('nome').value,
+          price: parseFloat(document.getElementById('preco').value),
+          categoria: { id: parseInt(document.getElementById('cat').value) }
+        };
+        formData.append('produto', JSON.stringify(produtoObj));
+        const file = document.getElementById('arquivo').files[0];
+        if(file) formData.append('file', file);
 
-        // Render Mesas
-        document.getElementById('list-mesas').innerHTML = currentData.mesas.map(m => `
-            <div class="bg-white p-5 rounded-xl border border-brand-border text-center shadow-sm">
-                <span class="text-[10px] font-bold text-brand-muted uppercase">Mesa</span>
-                <p class="text-3xl font-display font-bold text-warm-chocolate my-1">${m.numero}</p>
-                <button onclick="deleteItem('mesas', ${m.id})" class="mt-3 text-[9px] font-bold text-brand-primary border border-brand-primary/20 px-3 py-1 rounded-full hover:bg-red-50 transition-all">REMOVER</button>
-            </div>
-        `).join('');
-    }
-
-    async function deleteItem(endpoint, id) {
-        if(!confirm("Esta ação não pode ser desfeita. Excluir?")) return;
-        try {
-            const res = await fetch(`${API_BASE}/${endpoint}/${id}`, { method: 'DELETE' });
-            if(res.ok) loadAll();
-        } catch (e) { alert("Erro ao eliminar item."); }
-    }
-
-    function openModal(type, data = null) {
-        modalAction = { type, id: data ? data.id : null };
-        const title = document.getElementById('modal-title');
-        const fields = document.getElementById('form-fields');
-        title.innerText = (data ? 'Editar ' : 'Novo(a) ') + type.charAt(0).toUpperCase() + type.slice(1);
-        
-        let html = '';
-        if(type === 'categoria') {
-            html = `
-                <div>
-                    <label class="text-[10px] font-bold uppercase text-brand-muted ml-1">Nome</label>
-                    <input type="text" id="f-nome" value="${data?.nome || ''}" class="w-full p-3 rounded-lg border border-brand-border outline-none focus:border-warm-orange" required>
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold uppercase text-brand-muted ml-1">Ordem no Cardápio</label>
-                    <input type="number" id="f-ordem" value="${data?.ordem || '0'}" class="w-full p-3 rounded-lg border border-brand-border outline-none focus:border-warm-orange" required>
-                </div>
-            `;
-        } else if(type === 'mesa') {
-            html = `
-                <div>
-                    <label class="text-[10px] font-bold uppercase text-brand-muted ml-1">Identificação (Número)</label>
-                    <input type="text" id="f-numero" value="${data?.numero || ''}" class="w-full p-3 rounded-lg border border-brand-border outline-none focus:border-warm-orange" required>
-                </div>
-            `;
-        } else if(type === 'produto') {
-            html = `
-                <input type="text" id="f-nome" placeholder="Nome do Produto" value="${data?.nome || ''}" class="w-full p-3 rounded-lg border border-brand-border outline-none focus:border-warm-orange" required>
-                <textarea id="f-desc" placeholder="Descrição Artesanal" class="w-full p-3 rounded-lg border border-brand-border outline-none focus:border-warm-orange">${data?.descricao || ''}</textarea>
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="number" step="0.01" id="f-preco" placeholder="Preço (0.00)" value="${data?.price || ''}" class="w-full p-3 rounded-lg border border-brand-border outline-none focus:border-warm-orange" required>
-                    <select id="f-cat" class="w-full p-3 rounded-lg border border-brand-border outline-none focus:border-warm-orange" required>
-                        <option value="">Categoria...</option>
-                        ${currentData.categorias.map(c => `<option value="${c.id}" ${data?.categoria?.id === c.id ? 'selected' : ''}>${c.nome}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="bg-brand-bg p-4 rounded-lg border border-dashed border-brand-border">
-                    <label class="text-[10px] font-bold uppercase text-brand-muted block mb-2">Upload de Imagem</label>
-                    <input type="file" id="f-file" accept="image/*" class="text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-warm-chocolate file:text-white hover:file:bg-warm-orange file:transition-all">
-                </div>
-            `;
-        }
-
-        fields.innerHTML = html;
-        const modal = document.getElementById('modal');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    }
-
-    function closeModal() {
-        const modal = document.getElementById('modal');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
-
-    document.getElementById('modal-form').onsubmit = async (e) => {
-        e.preventDefault();
-        const { type, id } = modalAction;
-        const url = id ? `${API_BASE}/${type}s/${id}` : `${API_BASE}/${type}s`;
-        const method = id ? 'PUT' : 'POST';
-
-        let options = {};
-
-        if (type === 'produto') {
-            const formData = new FormData();
-            const produtoObj = {
-                nome: document.getElementById('f-nome').value,
-                descricao: document.getElementById('f-desc').value,
-                price: parseFloat(document.getElementById('f-preco').value),
-                categoria: { id: parseInt(document.getElementById('f-cat').value) }
-            };
-
-            // Sua API geralmente requer o objeto Produto como uma string JSON ou parte específica
-            formData.append('produto', JSON.stringify(produtoObj));
-            
-            const fileInput = document.getElementById('f-file');
-            if (fileInput.files[0]) {
-                formData.append('file', fileInput.files[0]);
-            }
-
-            options = { method, body: formData };
-        } else {
-            let body = {};
-            if(type === 'categoria') {
-                body = { nome: document.getElementById('f-nome').value, ordem: parseInt(document.getElementById('f-ordem').value) };
-            } else if(type === 'mesa') {
-                body = { numero: document.getElementById('f-numero').value };
-            }
-            options = {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            };
-        }
-
-        try {
-            const res = await fetch(url, options);
-            if(res.ok) { closeModal(); loadAll(); }
-            else { const txt = await res.text(); alert("Erro: " + txt); }
-        } catch (e) { alert("Falha na comunicação com o servidor."); }
+        await fetch('http://localhost:8080/produtos', { method: 'POST', body: formData });
+      } else {
+        const body = { 
+          nome: document.getElementById('nome').value, 
+          ordem: parseInt(document.getElementById('ordem').value) 
+        };
+        await fetch('http://localhost:8080/categorias', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(body)
+        });
+      }
+      
+      fecharModal();
+      carregarDados();
     };
 
-    window.editCategoria = (c) => openModal('categoria', c);
-    window.editProduto = (p) => openModal('produto', p);
+    async function excluirItem(rota, id) {
+      if(confirm("Excluir item?")) {
+        await fetch(`http://localhost:8080/${rota}/${id}`, { method: 'DELETE' });
+        carregarDados();
+      }
+    }
 
-    init();
+    carregarDados();
   </script>
 </body>
 </html>
