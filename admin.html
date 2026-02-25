@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Administrador</title>
+    <link rel="shortcut icon" href="img/lua.ico" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .order-card {
+            transition: all 0.15s ease;
+        }
+
+        .filter-btn.active {
+            box-shadow: 0 0 0 2px #4E342E, 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4E342E;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-[#0e0e0e] p-4 md:p-6 text-[#4E342E] font-sans antialiased min-h-screen">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- cabeçalho -->
+        <div class="bg-white rounded-t-lg shadow p-5 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">🍔</span>
+                <h1 class="text-2xl md:text-3xl font-bold text-[#4E342E]">Administrador de pedidos</h1>
+            </div>
+            <div class="bg-[#F5F5F5] px-4 py-2 rounded-full text-sm font-semibold shadow-inner">
+                <span id="order-count">0</span> pedidos na fila
+            </div>
+        </div>
+
+        <!-- barra de filtros -->
+        <div class="bg-white border-t border-gray-200 px-5 py-4 flex flex-wrap items-center gap-3 shadow-sm">
+            <span class="text-sm font-medium uppercase tracking-wide text-[#4E342E]/70">Filtrar por:</span>
+            <div class="flex flex-wrap gap-2">
+                <button data-filter="todos"
+                    class="filter-btn active px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-[#4E342E] text-white">Produtos</button>
+                <button data-filter="submetido"
+                    class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-gray-200 text-[#4E342E] hover:bg-gray-300">Adicionar
+                    categoria</button>
+                <button data-filter="pronto"
+                    class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-gray-200 text-[#4E342E] hover:bg-gray-300">Mesas</button>
+                <button data-filter="entregue"
+                    class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-gray-200 text-[#4E342E] hover:bg-gray-300">Entregue</button>
+                <button data-filter="pago"
+                    class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-gray-200 text-[#4E342E] hover:bg-gray-300">Pago</button>
+            </div>
+        </div>
+        <!-- Fim barra de filtros -->
+
+        <!-- container dos pedidos -->
+        <div id="orders-container"
+            class="bg-white rounded-b-lg shadow p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 min-h-[300px]">
+            <!-- estado de loading (gerenciado via js) -->
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            // ---------- CONFIGURAÇÃO DA API ----------
+            const API_BASE = 'https://sua-api.com/api';  // <-- ALTERE PARA SUA URL REAL
+            // Se não tiver API, use o modo localStorage (descomente a linha abaixo e comente as funções fetch)
+            // const USE_LOCALSTORAGE = true;
+
+            // ---------- ESTADO GLOBAL ----------
+            let orders = [];                // cache dos pedidos
+            let activeFilter = 'todos';
+            let isLoading = false;
+
+            const container = document.getElementById('orders-container');
+            const orderCountSpan = document.getElementById('order-count');
+
+            // ---------- FUNÇÕES DE API (REAIS) ----------
+            async function fetchOrders() {
+                isLoading = true;
+                renderLoading();
+                try {
+                    const response = await fetch(`${API_BASE}/pedidos`);  // espera um array de pedidos
+                    if (!response.ok) throw new Error('Erro ao carregar');
+                    orders = await response.json();
+                } catch (error) {
+                    console.error('Falha na requisição:', error);
+                    orders = [];
+                    showError('Não foi possível carregar os pedidos.');
+                } finally {
+                    isLoading = false;
+                    renderOrders();
+                }
+            }
+
+            async function updateOrderStatus(orderId, newStatus) {
+                try {
+                    const response = await fetch(`${API_BASE}/pedidos/${orderId}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: newStatus })
+                    });
+                    if (!response.ok) throw new Error('Erro ao atualizar');
+                    // atualiza localmente para evitar nova requisição
+                    const order = orders.find(o => o.id === orderId);
+                    if (order) order.status = newStatus;
+                    renderOrders();
+                } catch (error) {
+                    alert('Erro ao atualizar status. Tente novamente.');
+                    console.error(error);
+                }
+            }
+
+            async function deleteOrder(orderId) {
+                if (!confirm('Remover este pedido da fila?')) return;
+                try {
+                    const response = await fetch(`${API_BASE}/pedidos/${orderId}`, {
+                        method: 'DELETE'
+                    });
+                    if (!response.ok) throw new Error('Erro ao excluir');
+                    orders = orders.filter(o => o.id !== orderId);
+                    renderOrders();
+                } catch (error) {
+                    alert('Erro ao excluir pedido.');
+                    console.error(error);
+                }
+            }
+
+            // ---------- FALLBACK: localStorage (para testes locais sem API) ----------
+            /*
+            const STORAGE_KEY = 'hamburgueria_pedidos';
+            function loadFromStorage() {
+              const stored = localStorage.getItem(STORAGE_KEY);
+              orders = stored ? JSON.parse(stored) : [];
+              renderOrders();
+            }
+            function saveToStorage() {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
+            }
+            // Sobrescrever as funções de API para usar storage:
+            async function fetchOrders() { loadFromStorage(); }  // síncrono, mas mantém assinatura async
+            async function updateOrderStatus(orderId, newStatus) {
+              const order = orders.find(o => o.id === orderId);
+              if (order) { order.status = newStatus; saveToStorage(); renderOrders(); }
+            }
+            async function deleteOrder(orderId) {
+              orders = orders.filter(o => o.id !== orderId); saveToStorage(); renderOrders();
+            }
+            // */
+
+            // ---------- RENDERIZAÇÃO ----------
+            function renderLoading() {
+                container.innerHTML = `
+          <div class="col-span-full flex flex-col items-center justify-center py-16">
+            <div class="loading-spinner"></div>
+            <p class="mt-4 text-[#4E342E]/60">Carregando pedidos...</p>
+          </div>
+        `;
+            }
+
+            function showError(message) {
+                container.innerHTML = `
+          <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
+            <span class="text-5xl mb-3">😕</span>
+            <p class="text-lg font-medium text-[#4E342E]">${message}</p>
+            <button onclick="window.location.reload()" class="mt-4 bg-[#4E342E] text-white px-4 py-2 rounded-full text-sm">Tentar novamente</button>
+          </div>
+        `;
+            }
+
+            function renderOrders() {
+                if (isLoading) return;  // já está mostrando loading
+
+                const filtered = activeFilter === 'todos'
+                    ? orders
+                    : orders.filter(order => order.status === activeFilter);
+
+                orderCountSpan.textContent = filtered.length;
+
+                if (filtered.length === 0) {
+                    container.innerHTML = `
+            <div class="col-span-full flex flex-col items-center justify-center py-16 text-[#4E342E]/60 bg-[#F5F5F5] rounded-xl border-2 border-dashed border-[#4E342E]/20">
+              <span class="text-5xl mb-3">🍽️</span>
+              <p class="text-xl font-medium">Nenhum pedido com este status</p>
+              <p class="text-sm">Os pedidos aparecerão aqui automaticamente.</p>
+            </div>
+          `;
+                    return;
+                }
+
+                let htmlCards = '';
+                filtered.forEach(order => {
+                    const total = order.itens.reduce((acc, item) => acc + (item.quantidade * item.preco), 0);
+                    const itensHtml = order.itens.map(item =>
+                        `<li class="text-sm flex justify-between border-b border-[#4E342E]/10 py-1.5">
+              <span>${item.quantidade}x ${item.nome_item}</span>
+              <span class="font-mono">R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</span>
+            </li>`
+                    ).join('');
+
+                    let statusBadge = '';
+                    switch (order.status) {
+                        case 'submetido': statusBadge = '<span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-bold">SUBMETIDO</span>'; break;
+                        case 'pronto': statusBadge = '<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold">PRONTO</span>'; break;
+                        case 'entregue': statusBadge = '<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold">ENTREGUE</span>'; break;
+                        case 'pago': statusBadge = '<span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-bold">PAGO</span>'; break;
+                        default: statusBadge = '<span class="bg-gray-200 px-3 py-1 rounded-full text-xs">desconhecido</span>';
+                    }
+
+                    htmlCards += `
+            <div class="order-card bg-[#F5F5F5] rounded-xl shadow-md overflow-hidden border border-[#4E342E]/20 flex flex-col" data-order-id="${order.id}">
+              <div class="bg-[#4E342E] text-white p-4 flex flex-wrap justify-between items-center gap-2">
+                <h2 class="font-bold text-lg truncate">${order.nome_cliente}</h2>
+                <div>${statusBadge}</div>
+              </div>
+              <div class="p-4 flex-1">
+                <ul class="space-y-1 text-[#4E342E]/90">${itensHtml}</ul>
+                <div class="mt-3 pt-2 border-t border-[#4E342E]/20 flex justify-between font-bold">
+                  <span>Total</span>
+                  <span class="text-[#4E342E]">R$ ${total.toFixed(2).replace('.', ',')}</span>
+                </div>
+              </div>
+              <div class="grid grid-cols-4 border-t border-[#4E342E]/20 divide-x divide-[#4E342E]/20">
+                <button class="action-btn bg-white hover:bg-green-50 py-3 text-xs font-medium transition-colors flex flex-col items-center justify-center gap-0.5 text-green-700" data-action="pronto" data-id="${order.id}">
+                  <span class="text-lg">✅</span> <span>pronto</span>
+                </button>
+                <button class="action-btn bg-white hover:bg-blue-50 py-3 text-xs font-medium transition-colors flex flex-col items-center justify-center gap-0.5 text-blue-700" data-action="entregue" data-id="${order.id}">
+                  <span class="text-lg">🛵</span> <span>entregue</span>
+                </button>
+                <button class="action-btn bg-white hover:bg-purple-50 py-3 text-xs font-medium transition-colors flex flex-col items-center justify-center gap-0.5 text-purple-700" data-action="pago" data-id="${order.id}">
+                  <span class="text-lg">💰</span> <span>pago</span>
+                </button>
+                <button class="action-btn bg-white hover:bg-red-50 py-3 text-xs font-medium transition-colors flex flex-col items-center justify-center gap-0.5 text-red-700" data-action="excluir" data-id="${order.id}">
+                  <span class="text-lg">🗑️</span> <span>excluir</span>
+                </button>
+              </div>
+            </div>
+          `;
+                });
+
+                container.innerHTML = htmlCards;
+            }
+
+            // ---------- EVENTOS ----------
+            container.addEventListener('click', (e) => {
+                const actionBtn = e.target.closest('.action-btn');
+                if (!actionBtn) return;
+
+                const action = actionBtn.dataset.action;
+                const orderId = parseInt(actionBtn.dataset.id);
+
+                if (action === 'excluir') {
+                    deleteOrder(orderId);
+                } else if (action === 'pronto' || action === 'entregue' || action === 'pago') {
+                    updateOrderStatus(orderId, action);
+                }
+            });
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.filter-btn').forEach(b => {
+                        b.classList.remove('active', 'bg-[#4E342E]', 'text-white');
+                        b.classList.add('bg-gray-200', 'text-[#4E342E]');
+                    });
+                    btn.classList.remove('bg-gray-200', 'text-[#4E342E]');
+                    btn.classList.add('active', 'bg-[#4E342E]', 'text-white');
+
+                    activeFilter = btn.dataset.filter;
+                    renderOrders();  // filtra a partir do cache
+                });
+            });
+
+            // ---------- CARREGAMENTO INICIAL ----------
+            fetchOrders();
+
+            // (opcional) atualizar a cada 30 segundos
+            setInterval(fetchOrders, 30000);
+        })();
+    </script>
+
+    <div class="max-w-6xl mx-auto mt-4 text-right text-xs text-white/30">
+        <span>front‑end pronto para API · sem dados simulados</span>
+    </div>
+</body>
+
+</html>
