@@ -3,43 +3,60 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cardápio - Cliente</title>
+  <title>Cardápio - L.V.G.R</title>
   <link rel="shortcut icon" href="lua.ico" type="image/x-icon">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            warm: { 
+              chocolate: '#4a2010', 
+              orange: '#c85a17', 
+              cream: '#f5f0e8' 
+            },
+            brand: { 
+              bg: '#f5f0e8', 
+              card: '#fdfbf7', 
+              border: '#e0d5c5', 
+              primary: '#a33a10' 
+            }
+          }
+        }
+      }
+    }
+  </script>
 </head>
 
-<body class="bg-[#0e0e0e] text-white">
-<!-- Header -->
-<header class="bg-[#ff5400] text-center py-6">
-  <img src="img/hamb-1.png" alt="foto" class="w-32 h-32 mx-auto rounded-full shadow-lg border-4 border-white" />
-  <h1 class="text-4xl font-semibold">L.V.G.R</h1>
-  <p class="text-sm mt-4">Faça seu pedido com carinho 💚</p>
+<body class="bg-brand-bg text-warm-chocolate">
+<header class="bg-warm-chocolate text-center py-6 shadow-lg">
+  <img src="img/hamb-1.png" alt="logo" class="w-32 h-32 mx-auto rounded-full shadow-lg border-4 border-warm-orange" />
+  <h1 class="text-4xl font-bold text-warm-cream mt-2">L.V.G.R</h1>
+  <p class="text-sm mt-2 text-warm-cream opacity-90">Faça seu pedido com carinho 🥐</p>
 </header>
-</header>
-<!-- Fim de header -->
-
 <section class="max-w-4xl mx-auto py-8 px-4">
-  <h2 class="text-xl mb-4 text-center">Cardápio</h2>
+  <h2 class="text-2xl mb-6 text-center font-bold">Cardápio</h2>
   <div id="menu-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
 </section>
 
 <section class="max-w-4xl mx-auto px-4 pb-10">
-  <h2 class="text-xl mb-4 text-center">Carrinho</h2>
+  <h2 class="text-2xl mb-4 text-center font-bold">Carrinho</h2>
 
-  <div id="carrinho-container" class="bg-white text-[#ff5400] rounded p-4">
-    <div id="carrinho-itens"></div>
-    <p id="total" class="font-bold text-right mt-2">Total: R$ 0,00</p>
+  <div id="carrinho-container" class="bg-brand-card text-warm-chocolate rounded-xl border border-brand-border shadow-sm p-4">
+    <div id="carrinho-itens" class="divide-y divide-brand-border"></div>
+    <p id="total" class="font-bold text-right mt-4 text-xl text-brand-primary">Total: R$ 0,00</p>
   </div>
-<!-- Botão chamar garçom -->
-  <div class="flex justify-between mt-6 gap-4">
+
+  <div class="flex justify-between mt-8 gap-4">
     <button id="btn-chamar"
-      class="w-1/2 bg-yellow-500 text-black py-3 rounded hover:bg-yellow-600">
-      Chamar Garçom
+      class="w-1/2 bg-warm-orange text-white py-3 rounded-xl font-bold hover:bg-warm-chocolate transition-colors shadow-md transform active:scale-95">
+      Chamar Garçom 🔔
     </button>
-<!-- Botão fazer pedido -->
+
     <button id="btn-confirmar"
-      class="w-1/2 bg-green-600 py-3 rounded hover:bg-green-700">
-      Fazer Pedido
+      class="w-1/2 bg-brand-primary text-white py-3 rounded-xl font-bold hover:bg-warm-chocolate transition-colors shadow-md transform active:scale-95">
+      Fazer Pedido 🥖
     </button>
   </div>
 </section>
@@ -60,11 +77,11 @@ function formatar(valor) {
 
 async function carregarCardapio() {
   const container = document.getElementById("menu-container");
-  container.innerHTML = "Carregando...";
+  container.innerHTML = "<p class='text-center col-span-full'>Carregando cardápio...</p>";
 
   const dados = await getProducts();
   if (!dados) {
-    container.innerHTML = "Erro ao carregar.";
+    container.innerHTML = "<p class='text-center col-span-full text-red-600 font-bold'>Erro ao carregar cardápio.</p>";
     return;
   }
 
@@ -73,14 +90,16 @@ async function carregarCardapio() {
 
   dados.forEach(prod => {
     const card = document.createElement("div");
-    card.className = "bg-white text-[#ff5400] p-4 rounded";
+    card.className = "bg-brand-card text-warm-chocolate p-5 rounded-xl border border-brand-border shadow-sm flex flex-col justify-between";
 
     card.innerHTML = `
-      <h3 class="font-bold">${prod.nome}</h3>
-      <p>${formatar(prod.price)}</p>
-      <button class="bg-green-600 text-white px-3 py-1 mt-2 rounded"
+      <div>
+        <h3 class="font-bold text-lg">${prod.nome}</h3>
+        <p class="text-brand-primary font-bold text-lg mt-1">${formatar(prod.price)}</p>
+      </div>
+      <button class="bg-warm-orange text-white font-bold px-4 py-2 mt-4 rounded-lg hover:bg-brand-primary transition-colors text-sm"
         onclick="adicionar(${prod.id})">
-        Adicionar
+        ADICIONAR 🛒
       </button>
     `;
 
@@ -106,24 +125,31 @@ function renderCarrinho() {
   container.innerHTML = "";
   let total = 0;
 
-  Object.values(carrinho).forEach(item => {
-    const subtotal = item.price * item.quantidade;
-    total += subtotal;
+  const itens = Object.values(carrinho);
+  
+  if (itens.length === 0) {
+    container.innerHTML = "<p class='text-center py-4 text-brand-muted italic'>Seu carrinho está vazio</p>";
+  } else {
+    itens.forEach(item => {
+      const subtotal = item.price * item.quantidade;
+      total += subtotal;
 
-    container.innerHTML += `
-      <div class="flex justify-between border-b py-2">
-        <span>${item.nome} x${item.quantidade}</span>
-        <span>${formatar(subtotal)}</span>
-      </div>
-    `;
-  });
+      container.innerHTML += `
+        <div class="flex justify-between py-3 items-center">
+          <div>
+            <span class="font-bold text-sm uppercase">${item.nome}</span>
+            <span class="text-xs block text-warm-orange">${item.quantidade}x ${formatar(item.price)}</span>
+          </div>
+          <span class="font-bold text-brand-primary">${formatar(subtotal)}</span>
+        </div>
+      `;
+    });
+  }
 
-  document.getElementById("total").innerText = 
-    "Total: " + formatar(total);
+  document.getElementById("total").innerText = "Total: " + formatar(total);
 }
 
 document.getElementById("btn-confirmar").addEventListener("click", async () => {
-
   if (!mesaId) {
     alert("Mesa não identificada.");
     return;
@@ -151,7 +177,7 @@ document.getElementById("btn-confirmar").addEventListener("click", async () => {
 
   try {
     const novo = await postPedido(pedido);
-    alert("Pedido #" + novo.id + " enviado!");
+    alert("Pedido #" + novo.id + " enviado com sucesso!");
     carrinho = {};
     renderCarrinho();
   } catch {
@@ -160,21 +186,21 @@ document.getElementById("btn-confirmar").addEventListener("click", async () => {
 });
 
 document.getElementById("btn-chamar").addEventListener("click", async () => {
-
   if (!mesaId) {
     alert("Mesa não identificada.");
     return;
   }
 
   try {
-    await chamarGarcom(mesaId); // endpoint 
-    alert("Garçom chamado.");
+    await chamarGarcom(mesaId); 
+    alert("O garçom foi notificado e virá até a Mesa " + mesaId);
   } catch {
-    alert("Erro ao chamar.");
+    alert("Erro ao chamar o garçom.");
   }
 });
 
 carregarCardapio();
+renderCarrinho();
 </script>
 
 </body>
