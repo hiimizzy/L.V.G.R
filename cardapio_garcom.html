@@ -76,45 +76,45 @@
   }
 
   // ----- Renderizar cardápio (cria os cards dinamicamente a partir da API) -----
-  async function renderizarCardapio() {
-    const container = document.getElementById('menu-container');
-    container.innerHTML = 'Carregando cardápio...'; // Feedback para o usuário
+  // async function renderizarCardapio() {
+  //   const container = document.getElementById('menu-container');
+  //   container.innerHTML = 'Carregando cardápio...'; // Feedback para o usuário
 
-    const itensCardapio = await getProducts(); // Busca os produtos da API
+  //   const itensCardapio = await getProducts(); // Busca os produtos da API
 
-    if (itensCardapio === null) {
-        container.innerHTML = '<p class="text-center col-span-full text-red-500 font-bold">Erro ao conectar com o servidor. Verifique se a API está rodando.</p>';
-        return;
-    }
+  //   if (itensCardapio === null) {
+  //       container.innerHTML = '<p class="text-center col-span-full text-red-500 font-bold">Erro ao conectar com o servidor. Verifique se a API está rodando.</p>';
+  //       return;
+  //   }
 
-    allProducts = itensCardapio; // Salva os produtos globalmente
+  //   allProducts = itensCardapio; // Salva os produtos globalmente
 
-    container.innerHTML = ''; // Limpa o container antes de inserir os novos itens
+  //   container.innerHTML = ''; // Limpa o container antes de inserir os novos itens
 
-    if (itensCardapio.length === 0) {
-      container.innerHTML = '<p class="text-center col-span-full">Nenhum item disponível no cardápio.</p>';
-      return;
-    }
+  //   if (itensCardapio.length === 0) {
+  //     container.innerHTML = '<p class="text-center col-span-full">Nenhum item disponível no cardápio.</p>';
+  //     return;
+  //   }
 
-    itensCardapio.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'bg-[#ffffff] text-[#ff5400] p-4 rounded-xl shadow';
+  //   itensCardapio.forEach(item => {
+  //     const card = document.createElement('div');
+  //     card.className = 'bg-[#ffffff] text-[#ff5400] p-4 rounded-xl shadow';
 
-      card.innerHTML = `
-        <img src="${item.imgUrl}" alt="${item.nome}" class="w-full h-40 object-cover rounded-md mb-4" />
-        <h3 class="text-xl font-bold">${item.nome}</h3>
-        <p class="text-sm text-gray-600">${item.descricao || ''}</p>
-        <p class="text-lg mt-2">${formatarPreco(item.price)}</p>
-        <button class="adicionar-btn mt-2 bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700"
-                data-id="${item.id}"
-                data-nome="${item.nome}"
-                data-preco="${item.price}">
-          Adicionar 🛒
-        </button>
-      `;
+  //     card.innerHTML = `
+  //       <img src="${item.imgUrl}" alt="${item.nome}" class="w-full h-40 object-cover rounded-md mb-4" />
+  //       <h3 class="text-xl font-bold">${item.nome}</h3>
+  //       <p class="text-sm text-gray-600">${item.descricao || ''}</p>
+  //       <p class="text-lg mt-2">${formatarPreco(item.price)}</p>
+  //       <button class="adicionar-btn mt-2 bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700"
+  //               data-id="${item.id}"
+  //               data-nome="${item.nome}"
+  //               data-preco="${item.price}">
+  //         Adicionar 🛒
+  //       </button>
+  //     `;
 
-      container.appendChild(card);
-    });
+  //     container.appendChild(card);
+  //   });
 
     // Adiciona eventos aos botões "Adicionar"
     document.querySelectorAll('.adicionar-btn').forEach(btn => {
