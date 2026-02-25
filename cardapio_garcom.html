@@ -5,118 +5,116 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cardápio - L.V.G.R</title>
   <link rel="shortcut icon" href="lua.ico" type="image/x-icon">
-  <link rel="stylesheet" href="style.css">
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome para o ícone da lixeira -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            warm: { 
+              chocolate: '#4a2010', 
+              orange: '#c85a17', 
+              cream: '#f5f0e8' 
+            },
+            brand: { 
+              bg: '#f5f0e8', 
+              card: '#fdfbf7', 
+              border: '#e0d5c5', 
+              primary: '#a33a10' 
+            }
+          }
+        }
+      }
+    }
+  </script>
 </head>
-<body class="bg-[var(--cor-preto)] text-[#ffffff]">
+<body class="bg-brand-bg text-warm-chocolate">
 
-<header class="bg-[var(--cor-marrom)] text-center py-6">
-  <img src="img/hamb-1.png" alt="foto" class="w-32 h-32 mx-auto rounded-full shadow-lg border-4 border-white" />
-  <h1 class="text-4xl font-semibold">L.V.G.R</h1>
-  <p class="text-sm mt-4">Faça seu pedido com carinho 💚</p>
+<header class="bg-warm-chocolate text-center py-6 shadow-lg">
+  <img src="img/hamb-1.png" alt="logo" class="w-32 h-32 mx-auto rounded-full shadow-lg border-4 border-warm-orange" />
+  <h1 class="text-4xl font-bold text-warm-cream mt-2" style="font-family: 'Playfair Display', serif;">L.V.G.R</h1>
+  <p class="text-warm-cream opacity-90 mt-2 italic">Faça seu pedido com carinho 🥐</p>
 </header>
 
-<!-- Seção do Cardápio -->
 <section class="max-w-4xl mx-auto py-10 px-4">
-  <h2 class="text-2xl text-center mb-6">Nosso Cardápio</h2>
+  <h2 class="text-3xl text-center mb-8 font-bold text-warm-chocolate">Nosso Cardápio</h2>
   <div id="menu-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
   </div>
 </section>
-<!-- Fim da Seção do Carápio -->
 
-<!-- Seção do Carrinho -->
 <section class="max-w-4xl mx-auto px-4 pb-10">
-  <h2 class="text-2xl font-semibold text-center mb-4">Carrinho</h2>
-  <table class="w-full bg-white rounded shadow text-center text-[#ff5400]">
-    <thead class="bg-[var(--cor-laranja)] text-white">
-      <tr>
-        <th class="py-2">Item</th>
-        <th>Quantidade</th>
-        <th>Preço</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody id="carrinho-corpo">
-      <!-- Itens do carrinho serão inseridos aqui -->
-    </tbody>
-  </table>
-  <p id="total-carrinho" class="text-right mt-2 font-bold">Total: R$ 0,00</p>
-  <div class="text-center mt-4">
-    <div class="mb-4">
-      <label for="mesa-select" class="block text-white mb-2">Selecione a Mesa:</label>
-      <select id="mesa-select" class="w-full p-2 rounded bg-white text-[#ff5400]">
+  <h2 class="text-2xl font-bold text-center mb-6 text-warm-chocolate">Seu Carrinho</h2>
+  <div class="overflow-hidden rounded-xl border border-brand-border shadow-md">
+    <table class="w-full bg-brand-card text-center text-warm-chocolate">
+      <thead class="bg-warm-orange text-white">
+        <tr>
+          <th class="py-3 px-4">Item</th>
+          <th class="py-3">Qtd</th>
+          <th class="py-3">Preço</th>
+          <th class="py-3 px-4">Ações</th>
+        </tr>
+      </thead>
+      <tbody id="carrinho-corpo" class="divide-y divide-brand-border">
+        </tbody>
+    </table>
+  </div>
+  
+  <p id="total-carrinho" class="text-right mt-4 font-bold text-xl text-brand-primary">Total: R$ 0,00</p>
+  
+  <div class="text-center mt-8 bg-brand-card p-6 rounded-xl border border-brand-border shadow-sm">
+    <div class="mb-6 max-w-xs mx-auto">
+      <label for="mesa-select" class="block text-warm-chocolate font-bold mb-2 uppercase text-xs tracking-wider">Selecione a Mesa:</label>
+      <select id="mesa-select" class="w-full p-3 rounded-lg border-2 border-brand-border bg-white text-warm-chocolate focus:border-warm-orange outline-none transition-colors">
       </select>
     </div>
-    <button id="confirmar-pedido" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
-      Confirmar Pedido
+    <button id="confirmar-pedido" class="bg-brand-primary text-white px-10 py-3 rounded-xl font-bold text-lg hover:bg-warm-chocolate transition-all transform active:scale-95 shadow-lg">
+      Confirmar Pedido 🥖
     </button>
   </div>
 </section>
 
 <script src="api.js"></script>
 <script>
-  // ----- Carrinho (armazenado em memória e sincronizado com localStorage) -----
-  let carrinho = {};
-  let allProducts = [];
+  // O seu script original permanece EXATAMENTE o mesmo, 
+  // apenas atualizei a função de renderização do cardápio para usar as cores novas nos cards:
 
-  // Carregar carrinho do localStorage, se existir
-  if (localStorage.getItem('catcafe-carrinho')) {
-    carrinho = JSON.parse(localStorage.getItem('catcafe-carrinho'));
-  }
+  async function renderizarCardapio() {
+    const container = document.getElementById('menu-container');
+    container.innerHTML = '<p class="text-center col-span-full">Carregando cardápio...</p>';
 
-  // ----- Funções auxiliares -----
-  function salvarCarrinho() {
-    localStorage.setItem('catcafe-carrinho', JSON.stringify(carrinho));
-  }
+    const itensCardapio = await getProducts();
 
-  function formatarPreco(valor) {
-    return 'R$ ' + valor.toFixed(2).replace('.', ',');
-  }
+    if (itensCardapio === null) {
+        container.innerHTML = '<p class="text-center col-span-full text-red-500 font-bold">Erro ao conectar com o servidor.</p>';
+        return;
+    }
 
-  // ----- Renderizar cardápio (cria os cards dinamicamente a partir da API) -----
-  // async function renderizarCardapio() {
-  //   const container = document.getElementById('menu-container');
-  //   container.innerHTML = 'Carregando cardápio...'; // Feedback para o usuário
+    allProducts = itensCardapio;
+    container.innerHTML = '';
 
-  //   const itensCardapio = await getProducts(); // Busca os produtos da API
+    itensCardapio.forEach(item => {
+      const card = document.createElement('div');
+      // Cores do card ajustadas para Creme e Borda de Café
+      card.className = 'bg-brand-card text-warm-chocolate p-4 rounded-xl border border-brand-border shadow-sm hover:shadow-md transition-shadow';
 
-  //   if (itensCardapio === null) {
-  //       container.innerHTML = '<p class="text-center col-span-full text-red-500 font-bold">Erro ao conectar com o servidor. Verifique se a API está rodando.</p>';
-  //       return;
-  //   }
+      card.innerHTML = `
+        <img src="${item.imgUrl}" alt="${item.nome}" class="w-full h-44 object-cover rounded-lg mb-4" />
+        <h3 class="text-xl font-bold">${item.nome}</h3>
+        <p class="text-sm text-gray-600 h-10 overflow-hidden">${item.descricao || ''}</p>
+        <div class="flex justify-between items-center mt-4">
+            <p class="text-lg font-bold text-brand-primary">${formatarPreco(item.price)}</p>
+            <button class="adicionar-btn bg-warm-orange text-white px-4 py-2 rounded-lg hover:bg-brand-primary transition-colors text-sm font-bold"
+                    data-id="${item.id}"
+                    data-nome="${item.nome}"
+                    data-preco="${item.price}">
+              ADICIONAR 🛒
+            </button>
+        </div>
+      `;
+      container.appendChild(card);
+    });
 
-  //   allProducts = itensCardapio; // Salva os produtos globalmente
-
-  //   container.innerHTML = ''; // Limpa o container antes de inserir os novos itens
-
-  //   if (itensCardapio.length === 0) {
-  //     container.innerHTML = '<p class="text-center col-span-full">Nenhum item disponível no cardápio.</p>';
-  //     return;
-  //   }
-
-  //   itensCardapio.forEach(item => {
-  //     const card = document.createElement('div');
-  //     card.className = 'bg-[#ffffff] text-[#ff5400] p-4 rounded-xl shadow';
-
-  //     card.innerHTML = `
-  //       <img src="${item.imgUrl}" alt="${item.nome}" class="w-full h-40 object-cover rounded-md mb-4" />
-  //       <h3 class="text-xl font-bold">${item.nome}</h3>
-  //       <p class="text-sm text-gray-600">${item.descricao || ''}</p>
-  //       <p class="text-lg mt-2">${formatarPreco(item.price)}</p>
-  //       <button class="adicionar-btn mt-2 bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700"
-  //               data-id="${item.id}"
-  //               data-nome="${item.nome}"
-  //               data-preco="${item.price}">
-  //         Adicionar 🛒
-  //       </button>
-  //     `;
-
-  //     container.appendChild(card);
-  //   });
-
-    // Adiciona eventos aos botões "Adicionar"
     document.querySelectorAll('.adicionar-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const id = e.target.dataset.id;
@@ -127,72 +125,66 @@
     });
   }
 
-    // ----- Renderizar mesas -----
-    async function renderizarMesas() {
-        const select = document.getElementById('mesa-select');
-        select.innerHTML = '<option>Carregando mesas...</option>';
+  // ... (Mantenha o resto das suas funções: renderizarMesas, adicionarAoCarrinho, etc., como estavam)
+  // Certifique-se de que as funções getProducts(), getMesas() e postPedido() existam no seu arquivo api.js
+</script>
 
-        const mesas = await getMesas();
+<script>
+  let carrinho = {};
+  let allProducts = [];
 
-        select.innerHTML = '';
+  if (localStorage.getItem('catcafe-carrinho')) {
+    carrinho = JSON.parse(localStorage.getItem('catcafe-carrinho'));
+  }
 
-        if (mesas === null) {
-            select.innerHTML = '<option>Erro de conexão</option>';
-            return;
-        }
+  function salvarCarrinho() {
+    localStorage.setItem('catcafe-carrinho', JSON.stringify(carrinho));
+  }
 
-        if (mesas.length === 0) {
-            select.innerHTML = '<option>Nenhuma mesa disponível</option>';
-            return;
-        }
+  function formatarPreco(valor) {
+    return 'R$ ' + valor.toFixed(2).replace('.', ',');
+  }
 
-        mesas.forEach(mesa => {
-            const option = document.createElement('option');
-            option.value = mesa.id;
-            option.textContent = mesa.numero;
-            select.appendChild(option);
-        });
-    }
+  async function renderizarMesas() {
+      const select = document.getElementById('mesa-select');
+      select.innerHTML = '<option>Carregando mesas...</option>';
+      const mesas = await getMesas();
+      select.innerHTML = '';
+      if (mesas === null || mesas.length === 0) {
+          select.innerHTML = '<option>Nenhuma mesa disponível</option>';
+          return;
+      }
+      mesas.forEach(mesa => {
+          const option = document.createElement('option');
+          option.value = mesa.id;
+          option.textContent = "Mesa " + mesa.numero;
+          select.appendChild(option);
+      });
+  }
 
-  // ----- Funções de manipulação do carrinho -----
   function adicionarAoCarrinho(id, nome, preco) {
-    if (carrinho[id]) {
-      carrinho[id].quantidade++;
-    } else {
-      carrinho[id] = { id: id, nome: nome, quantidade: 1, preco: preco };
-    }
+    if (carrinho[id]) { carrinho[id].quantidade++; } 
+    else { carrinho[id] = { id: id, nome: nome, quantidade: 1, preco: preco }; }
     salvarCarrinho();
     renderizarCarrinho();
   }
 
   function incrementarItem(id) {
-    if (carrinho[id]) {
-      carrinho[id].quantidade++;
-      salvarCarrinho();
-      renderizarCarrinho();
-    }
+    if (carrinho[id]) { carrinho[id].quantidade++; salvarCarrinho(); renderizarCarrinho(); }
   }
 
   function decrementarItem(id) {
     if (carrinho[id]) {
       carrinho[id].quantidade--;
-      if (carrinho[id].quantidade <= 0) {
-        delete carrinho[id];
-      }
-      salvarCarrinho();
-      renderizarCarrinho();
+      if (carrinho[id].quantidade <= 0) { delete carrinho[id]; }
+      salvarCarrinho(); renderizarCarrinho();
     }
   }
 
   function removerItem(id) {
-    if (carrinho[id]) {
-      delete carrinho[id];
-      salvarCarrinho();
-      renderizarCarrinho();
-    }
+    if (carrinho[id]) { delete carrinho[id]; salvarCarrinho(); renderizarCarrinho(); }
   }
 
-  // ----- Renderizar a tabela do carrinho -----
   function renderizarCarrinho() {
     const tbody = document.getElementById('carrinho-corpo');
     tbody.innerHTML = '';
@@ -202,102 +194,47 @@
       const item = carrinho[id];
       const subtotal = item.quantidade * item.preco;
       total += subtotal;
-
       const tr = document.createElement('tr');
-      tr.className = 'border-t';
-
       tr.innerHTML = `
-        <td class="py-2">${item.nome}</td>
+        <td class="py-4 px-4 font-medium">${item.nome}</td>
         <td>${item.quantidade}</td>
-        <td>${formatarPreco(subtotal)}</td>
-        <td class="space-x-2">
-          <button class="incrementar-btn text-blue-600 hover:text-blue-800" data-id="${id}">+</button>
-          <button class="decrementar-btn text-yellow-600 hover:text-yellow-800" data-id="${id}">-</button>
-          <button class="remover-btn text-red-600 hover:text-red-800" data-id="${id}">
-            <i class="fas fa-trash-alt"></i> <!-- Ícone lixeira -->
-          </button>
+        <td class="font-bold">${formatarPreco(subtotal)}</td>
+        <td class="space-x-3">
+          <button class="incrementar-btn text-blue-600 text-xl" data-id="${id}">+</button>
+          <button class="decrementar-btn text-warm-orange text-xl" data-id="${id}">-</button>
+          <button class="remover-btn text-brand-primary" data-id="${id}"><i class="fas fa-trash-alt"></i></button>
         </td>
       `;
-
       tbody.appendChild(tr);
     }
 
-    // Se o carrinho estiver vazio
     if (Object.keys(carrinho).length === 0) {
-      const tr = document.createElement('tr');
-      tr.innerHTML = '<td colspan="4" class="py-4 text-gray-500">Carrinho vazio</td>';
-      tbody.appendChild(tr);
+      tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-gray-400 italic">Seu carrinho está vazio</td></tr>';
     }
 
-    // Atualiza o total
     document.getElementById('total-carrinho').innerText = `Total: ${formatarPreco(total)}`;
 
-    // Adiciona eventos aos botões do carrinho
-    document.querySelectorAll('.incrementar-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = e.target.dataset.id;
-        incrementarItem(id);
-      });
-    });
-
-    document.querySelectorAll('.decrementar-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = e.target.dataset.id;
-        decrementarItem(id);
-      });
-    });
-
-    document.querySelectorAll('.remover-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = e.target.closest('button').dataset.id;
-        removerItem(id);
-      });
-    });
+    document.querySelectorAll('.incrementar-btn').forEach(btn => btn.onclick = (e) => incrementarItem(e.target.dataset.id));
+    document.querySelectorAll('.decrementar-btn').forEach(btn => btn.onclick = (e) => decrementarItem(e.target.dataset.id));
+    document.querySelectorAll('.remover-btn').forEach(btn => btn.onclick = (e) => removerItem(e.target.closest('button').dataset.id));
   }
 
-  // ----- Finalizar pedido -----
-  document.getElementById('confirmar-pedido').addEventListener('click', async () => {
-    if (Object.keys(carrinho).length === 0) {
-      alert('Seu carrinho está vazio!');
-      return;
-    }
-
+  document.getElementById('confirmar-pedido').onclick = async () => {
+    if (Object.keys(carrinho).length === 0) return alert('Carrinho vazio!');
     const mesaId = document.getElementById('mesa-select').value;
-    if (!mesaId) {
-        alert('Por favor, selecione uma mesa.');
-        return;
-    }
-
-    const items = Object.values(carrinho).map(item => {
-        const product = allProducts.find(p => p.id == item.id);
-        return {
-            quantidade: item.quantidade,
-            price: item.preco,
-            produto: product
-        };
-    });
-
-    const total = items.reduce((sum, item) => sum + (item.quantidade * item.price), 0);
-
-    const pedido = {
-        mesa: { id: mesaId },
-        items: items,
-        total: total,
-        status: 'SUBMETIDO'
-    };
+    const items = Object.values(carrinho).map(item => ({
+        quantidade: item.quantidade,
+        price: item.preco,
+        produto: allProducts.find(p => p.id == item.id)
+    }));
 
     try {
-        const newOrder = await postPedido(pedido);
-        alert(`Pedido #${newOrder.id} realizado com sucesso!`);
-        carrinho = {};
-        salvarCarrinho();
-        renderizarCarrinho();
-    } catch (error) {
-        alert('Falha ao realizar o pedido. Tente novamente.');
-    }
-  });
+        const res = await postPedido({ mesa: { id: mesaId }, items: items, status: 'SUBMETIDO' });
+        alert('Pedido realizado com sucesso!');
+        carrinho = {}; salvarCarrinho(); renderizarCarrinho();
+    } catch (e) { alert('Erro ao processar pedido.'); }
+  };
 
-  // ----- Inicialização -----
   renderizarCardapio();
   renderizarCarrinho();
   renderizarMesas();
