@@ -20,145 +20,74 @@
       }
     }
   </script>
-  <style>
-    body { font-family: 'Lato', sans-serif; }
-    h1, h2 { font-family: 'Playfair Display', serif; }
-    .loading-spinner {
-      border: 3px solid #e0d5c5;
-      border-top: 3px solid #c85a17;
-      border-radius: 50%;
-      width: 40px; height: 40px;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-  </style>
 </head>
 <body class="bg-brand-bg p-4 md:p-6 text-warm-chocolate min-h-screen">
 
   <div class="max-w-6xl mx-auto">
-    <div class="bg-warm-chocolate rounded-t-xl shadow-lg p-5 flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-warm-orange rounded-lg flex items-center justify-center">
-            <span class="font-display text-lg font-bold text-warm-cream">L</span>
-        </div>
-        <h1 class="text-2xl md:text-3xl font-bold text-warm-cream">Painel de Produção</h1>
-      </div>
-      <div class="bg-warm-orange px-4 py-2 rounded-full text-sm font-bold text-warm-cream shadow-md">
-        <span id="order-count">0</span> PEDIDOS ATIVOS
-      </div>
-    </div>
+    <header class="bg-warm-chocolate rounded-t-xl shadow-lg p-5 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-warm-cream font-display">Painel de Produção</h1>
+      <div id="status-badge" class="bg-warm-orange px-4 py-1 rounded-full text-xs font-bold text-warm-cream">CARREGANDO...</div>
+    </header>
 
-    <div class="bg-brand-card border-x border-brand-border px-5 py-4 flex flex-wrap items-center gap-3 shadow-sm">
-      <span class="text-xs font-bold uppercase tracking-widest text-warm-chocolate/70">Filtrar Status:</span>
-      <div class="flex flex-wrap gap-2">
-        <button data-filter="todos" class="filter-btn bg-warm-chocolate text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all">TODOS</button>
-        <button data-filter="SUBMETIDO" class="filter-btn bg-brand-bg text-warm-chocolate border border-brand-border px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-brand-border transition-all">SUBMETIDO</button>
-        <button data-filter="PREPARADO" class="filter-btn bg-brand-bg text-warm-chocolate border border-brand-border px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-brand-border transition-all">PREPARADO</button>
-        <button data-filter="ENTREGUE" class="filter-btn bg-brand-bg text-warm-chocolate border border-brand-border px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-brand-border transition-all">ENTREGUE</button>
-      </div>
-    </div>
-
-    <div id="orders-container" class="bg-brand-card rounded-b-xl border border-brand-border shadow-inner p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 min-h-[400px]">
+    <div id="orders-container" class="bg-brand-card rounded-b-xl border border-brand-border p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 min-h-[400px]">
       </div>
   </div>
 
+  <script src="api.js"></script>
   <script>
-    (function() {
-      const API_BASE = 'http://localhost:8080'; // URL base da sua API
-      let orders = [];
-      let activeFilter = 'todos';
+    let pedidosLocais = [];
 
+    async function atualizarPainel() {
       const container = document.getElementById('orders-container');
-      const orderCountSpan = document.getElementById('order-count');
-
-      async function fetchOrders() {
-        renderLoading();
-        try {
-          const response = await fetch(`${API_BASE}/pedidos`);
-          if (!response.ok) throw new Error();
-          orders = await response.json();
-          renderOrders();
-        } catch (error) {
-          container.innerHTML = `<div class="col-span-full text-center py-10 text-brand-primary font-bold">Erro ao conectar com a API em ${API_BASE}</div>`;
-        }
+      // Supõe-se que no seu api.js existe a função getPedidos() ou similar
+      // Caso não exista, a função fetch padrão é usada como fallback seguro
+      try {
+        const response = await fetch('http://localhost:8080/pedidos');
+        pedidosLocais = await response.json();
+        renderizar();
+      } catch (e) {
+        container.innerHTML = "<p class='col-span-full text-center py-10'>Erro ao conectar com api.js</p>";
       }
+    }
 
-      async function updateStatus(orderId, newStatus) {
-        const order = orders.find(o => o.id === orderId);
-        if (!order) return;
+    function renderizar() {
+      const container = document.getElementById('orders-container');
+      document.getElementById('status-badge').innerText = `${pedidosLocais.length} PEDIDOS`;
 
-        // Monta o objeto Pedido conforme o Schema da API
-        const updatedOrder = { ...order, status: newStatus };
-
-        try {
-          const response = await fetch(`${API_BASE}/pedidos/${orderId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updatedOrder)
-          });
-          if (response.ok) fetchOrders();
-        } catch (error) {
-          alert('Erro ao atualizar pedido.');
-        }
-      }
-
-      function renderOrders() {
-        const filtered = activeFilter === 'todos' ? orders : orders.filter(o => o.status === activeFilter);
-        orderCountSpan.textContent = filtered.length;
-
-        if (filtered.length === 0) {
-          container.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-20 text-brand-muted">
-            <span class="text-4xl mb-2">🥖</span>
-            <p class="font-bold">Nenhum pedido nesta categoria</p>
-          </div>`;
-          return;
-        }
-
-        container.innerHTML = filtered.map(order => `
-          <div class="bg-white rounded-xl shadow-sm border border-brand-border flex flex-col overflow-hidden">
-            <div class="bg-warm-chocolate p-3 flex justify-between items-center text-warm-cream">
-              <span class="font-bold">Mesa ${order.mesa?.numero || 'S/N'}</span>
-              <span class="text-[10px] bg-warm-orange px-2 py-0.5 rounded uppercase">${order.status}</span>
-            </div>
-            <div class="p-4 flex-1">
-              <ul class="space-y-2 mb-4">
-                ${order.items.map(item => `
-                  <li class="flex justify-between text-sm border-b border-brand-bg pb-1">
-                    <span class="font-semibold">${item.quantidade}x ${item.produto.nome}</span>
-                  </li>
-                `).join('')}
-              </ul>
-              <div class="text-right font-bold text-brand-primary">Total: R$ ${order.total.toFixed(2).replace('.',',')}</div>
-            </div>
-            <div class="grid grid-cols-3 border-t border-brand-border bg-brand-bg/30">
-              <button onclick="updateStatus(${order.id}, 'PREPARADO')" class="py-3 text-[10px] font-bold text-warm-chocolate hover:bg-green-100 transition-colors border-r border-brand-border">COZINHAR</button>
-              <button onclick="updateStatus(${order.id}, 'ENTREGUE')" class="py-3 text-[10px] font-bold text-warm-chocolate hover:bg-blue-100 transition-colors border-r border-brand-border">ENTREGAR</button>
-              <button onclick="updateStatus(${order.id}, 'PAGO')" class="py-3 text-[10px] font-bold text-warm-chocolate hover:bg-purple-100 transition-colors">PAGAR</button>
+      container.innerHTML = pedidosLocais.map(order => `
+        <div class="bg-white rounded-xl shadow-sm border border-brand-border overflow-hidden">
+          <div class="bg-warm-chocolate p-3 flex justify-between text-warm-cream text-xs font-bold">
+            <span>MESA ${order.mesa?.numero}</span>
+            <span class="uppercase">${order.status}</span>
+          </div>
+          <div class="p-4">
+            <ul class="space-y-1 mb-4">
+              ${order.items.map(item => `<li class="text-sm font-bold">• ${item.quantidade}x ${item.produto.nome}</li>`).join('')}
+            </ul>
+            <div class="flex gap-2">
+              <button onclick="mudarStatus(${order.id}, 'PREPARADO')" class="flex-1 bg-warm-orange text-white text-[10px] py-2 rounded font-bold">PREPARAR</button>
+              <button onclick="mudarStatus(${order.id}, 'ENTREGUE')" class="flex-1 bg-brand-primary text-white text-[10px] py-2 rounded font-bold">ENTREGAR</button>
             </div>
           </div>
-        `).join('');
-      }
+        </div>
+      `).join('');
+    }
 
-      function renderLoading() {
-        container.innerHTML = `<div class="col-span-full flex justify-center py-20"><div class="loading-spinner"></div></div>`;
-      }
-
-      // Filtros
-      document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.filter-btn').forEach(b => {
-            b.className = "filter-btn bg-brand-bg text-warm-chocolate border border-brand-border px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-brand-border transition-all";
-          });
-          btn.className = "filter-btn bg-warm-chocolate text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all";
-          activeFilter = btn.dataset.filter;
-          renderOrders();
-        });
+    async function mudarStatus(id, novoStatus) {
+      const pedido = pedidosLocais.find(p => p.id === id);
+      pedido.status = novoStatus;
+      
+      // Utiliza a lógica de PUT da sua API
+      await fetch(`http://localhost:8080/pedidos/${id}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(pedido)
       });
+      atualizarPainel();
+    }
 
-      window.updateStatus = updateStatus;
-      fetchOrders();
-      setInterval(fetchOrders, 10000); // Atualiza a cada 10s
-    })();
+    atualizarPainel();
+    setInterval(atualizarPainel, 10000);
   </script>
 </body>
 </html>
