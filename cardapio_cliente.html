@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cardápio - Cliente</title>
+  <link rel="shortcut icon" href="lua.ico" type="image/x-icon">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-[#0e0e0e] text-white">
+<!-- Header -->
+<header class="bg-[#ff5400] text-center py-6">
+  <img src="img/hamb-1.png" alt="foto" class="w-32 h-32 mx-auto rounded-full shadow-lg border-4 border-white" />
+  <h1 class="text-4xl font-semibold">L.V.G.R</h1>
+  <p class="text-sm mt-4">Faça seu pedido com carinho 💚</p>
+</header>
+</header>
+<!-- Fim de header -->
+ 
+<section class="max-w-4xl mx-auto py-8 px-4">
+  <h2 class="text-xl mb-4 text-center">Cardápio</h2>
+  <div id="menu-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+</section>
+
+<section class="max-w-4xl mx-auto px-4 pb-10">
+  <h2 class="text-xl mb-4 text-center">Carrinho</h2>
+
+  <div id="carrinho-container" class="bg-white text-[#ff5400] rounded p-4">
+    <div id="carrinho-itens"></div>
+    <p id="total" class="font-bold text-right mt-2">Total: R$ 0,00</p>
+  </div>
+<!-- Botão chamar garçom -->
+  <div class="flex justify-between mt-6 gap-4">
+    <button id="btn-chamar"
+      class="w-1/2 bg-yellow-500 text-black py-3 rounded hover:bg-yellow-600">
+      Chamar Garçom
+    </button>
+
+    <button id="btn-confirmar"
+      class="w-1/2 bg-green-600 py-3 rounded hover:bg-green-700">
+      Fazer Pedido
+    </button>
+  </div>
+</section>
+
+<script src="api.js"></script>
+
+<script>
+let carrinho = {};
+let produtos = [];
+
+// Pega mesa via URL
+const params = new URLSearchParams(window.location.search);
+const mesaId = params.get("mesa");
+
+function formatar(valor) {
+  return "R$ " + valor.toFixed(2).replace(".", ",");
+}
+
+async function carregarCardapio() {
+  const container = document.getElementById("menu-container");
+  container.innerHTML = "Carregando...";
+
+  const dados = await getProducts();
+  if (!dados) {
+    container.innerHTML = "Erro ao carregar.";
+    return;
+  }
+
+  produtos = dados;
+  container.innerHTML = "";
+
+  dados.forEach(prod => {
+    const card = document.createElement("div");
+    card.className = "bg-white text-[#ff5400] p-4 rounded";
+
+    card.innerHTML = `
+      <h3 class="font-bold">${prod.nome}</h3>
+      <p>${formatar(prod.price)}</p>
+      <button class="bg-green-600 text-white px-3 py-1 mt-2 rounded"
+        onclick="adicionar(${prod.id})">
+        Adicionar
+      </button>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+function adicionar(id) {
+  if (carrinho[id]) {
+    carrinho[id].quantidade++;
+  } else {
+    const prod = produtos.find(p => p.id === id);
+    carrinho[id] = {
+      ...prod,
+      quantidade: 1
+    };
+  }
+  renderCarrinho();
+}
+
+function renderCarrinho() {
+  const container = document.getElementById("carrinho-itens");
+  container.innerHTML = "";
+  let total = 0;
+
+  Object.values(carrinho).forEach(item => {
+    const subtotal = item.price * item.quantidade;
+    total += subtotal;
+
+    container.innerHTML += `
+      <div class="flex justify-between border-b py-2">
+        <span>${item.nome} x${item.quantidade}</span>
+        <span>${formatar(subtotal)}</span>
+      </div>
+    `;
+  });
+
+  document.getElementById("total").innerText = 
+    "Total: " + formatar(total);
+}
+
+document.getElementById("btn-confirmar").addEventListener("click", async () => {
+
+  if (!mesaId) {
+    alert("Mesa não identificada.");
+    return;
+  }
+
+  if (Object.keys(carrinho).length === 0) {
+    alert("Carrinho vazio.");
+    return;
+  }
+
+  const items = Object.values(carrinho).map(item => ({
+    quantidade: item.quantidade,
+    price: item.price,
+    produto: { id: item.id }
+  }));
+
+  const total = items.reduce((s, i) => s + i.quantidade * i.price, 0);
+
+  const pedido = {
+    mesa: { id: mesaId },
+    items,
+    total,
+    status: "SUBMETIDO"
+  };
+
+  try {
+    const novo = await postPedido(pedido);
+    alert("Pedido #" + novo.id + " enviado!");
+    carrinho = {};
+    renderCarrinho();
+  } catch {
+    alert("Erro ao enviar pedido.");
+  }
+});
+
+document.getElementById("btn-chamar").addEventListener("click", async () => {
+
+  if (!mesaId) {
+    alert("Mesa não identificada.");
+    return;
+  }
+
+  try {
+    await chamarGarcom(mesaId); // endpoint 
+    alert("Garçom chamado.");
+  } catch {
+    alert("Erro ao chamar.");
+  }
+});
+
+carregarCardapio();
+</script>
+
+</body>
+</html>
