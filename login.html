@@ -133,23 +133,26 @@
     <script type="module">
       // Import the functions you need from the SDKs you need
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-      import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-      // TODO: Add SDKs for Firebase products that you want to use
-      // https://firebase.google.com/docs/web/setup#available-libraries
-
-      // Your web app's Firebase configuration
-      const firebaseConfig = {
-        apiKey: "AIzaSyDlVcU8qGHHobZ1_SMaB3uZ9QwfsEEVq2M",
-        authDomain: "lvgr-2119a.firebaseapp.com",
-        projectId: "lvgr-2119a",
-        storageBucket: "lvgr-2119a.firebasestorage.app",
-        messagingSenderId: "570796412382",
-        appId: "1:570796412382:web:944b16471cf20e40a2a14f"
-      };
+      import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+      // Importa a configuração de um arquivo separado e seguro
+      import { firebaseConfig } from './firebase-config.js';
 
       // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
+
+      // --- VERIFICA SE O USUÁRIO JÁ ESTÁ LOGADO ---
+      // Isso impede que um usuário logado veja a página de login novamente.
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          // O usuário está logado, então é redirecionado para a página principal.
+          // Isso acontece se ele tentar acessar /login.html diretamente ou usar o botão "voltar" do navegador.
+          console.log('Usuário já logado, redirecionando...', user.email);
+          // Como não sabemos a "role" (admin/cliente) aqui, redirecionamos para uma página padrão.
+          window.location.href = 'cardapio_cliente.html';
+        }
+        // Se não houver usuário, a página de login continua a ser exibida normalmente.
+      });
 
       // --- LÓGICA DAS ABAS (TABS) ---
       const tabLoginBtn = document.getElementById('tabLoginBtn');
