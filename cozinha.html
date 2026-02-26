@@ -7,6 +7,7 @@
   <title>Cozinha · L.V.G.R</title>
   <link rel="shortcut icon" href="img/lua.ico" type="image/x-icon">
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
@@ -37,7 +38,7 @@
 <body class="bg-brand-bg p-4 md:p-6 text-warm-chocolate min-h-screen">
 
   <div class="max-w-6xl mx-auto">
-    <div class="bg-warm-chocolate rounded-t-xl shadow-lg p-5 flex flex-wrap items-center justify-between gap-4">
+    <div class="bg-warm-chocolate rounded-t-xl shadow-lg p-5 flex flex-wrap items-center justify-between gap-4 relative">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 bg-warm-orange rounded-lg flex items-center justify-center">
             <span class="font-display text-lg font-bold text-warm-cream">L</span>
@@ -46,6 +47,9 @@
       </div>
       <div class="bg-warm-orange px-4 py-2 rounded-full text-sm font-bold text-warm-cream shadow-md">
         <span id="order-count">0</span> PEDIDOS ATIVOS
+      </div>
+      <button id="logout-btn" class="absolute top-4 right-4 bg-warm-orange/80 text-white px-3 py-1 rounded-full text-xs font-bold hover:bg-warm-orange transition-colors">
+        Sair <i class="fas fa-sign-out-alt ml-1"></i>
       </div>
     </div>
 
@@ -162,6 +166,27 @@
       fetchOrders();
       setInterval(fetchOrders, 10000); // Atualiza a cada 10s
     })();
+  </script>
+
+  <!-- Firebase Logout -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+    import { firebaseConfig } from './firebase-config.js';
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const logoutButton = document.getElementById('logout-btn');
+    logoutButton.addEventListener('click', () => {
+      signOut(auth).then(() => {
+        console.log('Usuário deslogado com sucesso.');
+        window.location.href = 'login.html';
+      }).catch((error) => {
+        console.error('Erro ao fazer logout:', error);
+        alert('Não foi possível sair. Tente novamente.');
+      });
+    });
   </script>
 </body>
 </html>
