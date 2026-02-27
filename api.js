@@ -1,3 +1,4 @@
+// Função para buscar categorias da API
 async function getCategorias() {
     try {
         const response = await fetch('https://uapi.lunarvoid.online/categorias');
@@ -9,6 +10,7 @@ async function getCategorias() {
     }
 }
 
+// Função para buscar produtos da API
 async function getProducts() {
     //https://uapi.lunarvoid.online
     try {
@@ -26,6 +28,7 @@ async function getProducts() {
     }
 }
 
+// Função para buscar mesas da API
 async function getMesas() {
     try {
         const response = await fetch('https://uapi.lunarvoid.online/mesas'); 
@@ -40,6 +43,7 @@ async function getMesas() {
     }
 }
 
+// Função para buscar pedidos da API
 async function postPedido(order) {
     try {
         const response = await fetch('https://uapi.lunarvoid.online/pedidos', {
@@ -55,6 +59,7 @@ async function postPedido(order) {
     }
 }
 
+// Função para buscar pedidos da API
 async function postCategoria(data) {
     try {
         const response = await fetch('https://uapi.lunarvoid.online/categorias', {
@@ -70,6 +75,7 @@ async function postCategoria(data) {
     }
 }
 
+// Função para atualizar a ordem das categorias
 async function putCategorias(data) {
     try {
         const response = await fetch('https://uapi.lunarvoid.online/categorias/ordenar', {
@@ -113,6 +119,7 @@ async function postMesa(data) {
     }
 }
 
+// Função para criar um novo produto.
 async function postProduto(produto, file) {
     try {
         const formData = new FormData();
@@ -138,6 +145,7 @@ async function postProduto(produto, file) {
     }
 }
 
+// Função para chamar o garçom
 async function chamarGarcom(mesaId) {
     try {
         const response = await fetch('https://uapi.lunarvoid.online/chamados', {
