@@ -77,22 +77,8 @@
     <!-- formulário de CADASTRO (garçom/cozinha/admin) -->
     <div id="registerForm" class="tab-content tab-hidden mt-6 space-y-4">
       <form>
-        <!-- papel (cliente / admin) -->
-        <div class="role-option flex gap-3 justify-center mb-4">
-          <div>
-            <input type="radio" name="loginRole" id="loginCliente" value="cliente" checked>
-            <label for="loginCliente"><i class="fas fa-user"></i> Garçom</label>
-          </div>
-          <div>
-            <input type="radio" name="loginRole" id="loginAdmin" value="admin">
-            <label for="loginAdmin"><i class="fas fa-user-cog"></i> Admin</label>
-          </div>
-          <div>
-            <input type="radio" name="loginRole" id="loginCliente" value="cliente" checked>
-            <label for="loginCliente"><i class="fas fa-user"></i>Cozinha</label>
-          </div>
-        </div>
-
+         <!-- Criar nova conta -->
+         
         <div class="relative">
           <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
           <input type="email" id="register-email" placeholder="E-mail" required
@@ -189,7 +175,7 @@
           .then((userCredential) => {
             console.log("Login bem-sucedido:", userCredential.user);
             loginErrorDiv.textContent = ''; // Limpa qualquer erro anterior
-            
+
             // Redireciona com base no e-mail
             if (email.includes('@garcom')) {
               window.location.href = 'cardapio_garcom.html';
@@ -199,7 +185,7 @@
               window.location.href = 'cozinha.html';
             }
             else {
-              window.location.href = 'cardapio_cliente.html?mesa=1'; 
+              window.location.href = 'cardapio_cliente.html?mesa=1';
             }
           })
           .catch((error) => {
