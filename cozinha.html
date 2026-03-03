@@ -72,40 +72,37 @@
 
   <script>
     (function() {
-      const API_BASE = 'https://uapi.lunarvoid.online'; // URL base da sua API
       let orders = [];
       let activeFilter = 'todos';
 
       const container = document.getElementById('orders-container');
       const orderCountSpan = document.getElementById('order-count');
 
+      // As funções `getPedidos` e `updatePedido` vem do `api.js`
       async function fetchOrders() {
         renderLoading();
         try {
-          const response = await fetch(`${API_BASE}/pedidos`);
-          if (!response.ok) throw new Error();
-          orders = await response.json();
+          const fetchedOrders = await getPedidos(); // Usando função do api.js
+          if (!fetchedOrders) throw new Error('Falha ao buscar pedidos');
+          orders = fetchedOrders;
           renderOrders();
         } catch (error) {
-          container.innerHTML = `<div class="col-span-full text-center py-10 text-brand-primary font-bold">Erro ao conectar com a API em ${API_BASE}</div>`;
+          console.error("Erro em fetchOrders:", error);
+          container.innerHTML = `<div class="col-span-full text-center py-10 text-brand-primary font-bold">Erro ao conectar com a API.</div>`;
         }
       }
 
       async function updateStatus(orderId, newStatus) {
         const order = orders.find(o => o.id === orderId);
         if (!order) return;
-
-        // Monta o objeto Pedido conforme o Schema da API
+        
         const updatedOrder = { ...order, status: newStatus };
 
         try {
-          const response = await fetch(`${API_BASE}/pedidos/${orderId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updatedOrder)
-          });
-          if (response.ok) fetchOrders();
+          await updatePedido(orderId, updatedOrder); 
+          fetchOrders(); // Recarrega a lista
         } catch (error) {
+          console.error("Erro em updateStatus:", error);
           alert('Erro ao atualizar pedido.');
         }
       }
@@ -139,9 +136,9 @@
               <div class="text-right font-bold text-brand-primary">Total: R$ ${order.total.toFixed(2).replace('.',',')}</div>
             </div>
             <div class="grid grid-cols-3 border-t border-brand-border bg-brand-bg/30">
-              <button onclick="updateStatus(${order.id}, 'PREPARADO')" class="py-3 text-[10px] font-bold text-warm-chocolate hover:bg-green-100 transition-colors border-r border-brand-border">COZINHAR</button>
-              <button onclick="updateStatus(${order.id}, 'ENTREGUE')" class="py-3 text-[10px] font-bold text-warm-chocolate hover:bg-blue-100 transition-colors border-r border-brand-border">ENTREGAR</button>
-              <button onclick="updateStatus(${order.id}, 'PAGO')" class="py-3 text-[10px] font-bold text-warm-chocolate hover:bg-purple-100 transition-colors">PAGAR</button>
+              <button onclick="window.updateStatus(${order.id}, 'PREPARADO')" class="py-3 text-[10px] font-bold text-warm-chocolate hover:bg-green-100 transition-colors border-r border-brand-border">COZINHAR</button>
+              <button onclick="window.updateStatus(${order.id}, 'ENTREGUE')" class="py-3 text-[10px] font-bold text-warm-chocolate hover:bg-blue-100 transition-colors border-r border-brand-border">ENTREGAR</button>
+              <button onclick="window.updateStatus(${order.id}, 'PAGO')" class="py-3 text-[10px] font-bold text-warm-chocolate hover:bg-purple-100 transition-colors">PAGAR</button>
             </div>
           </div>
         `).join('');
